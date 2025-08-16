@@ -18,9 +18,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { GoogleIcon } from '@/components/icons/google-icon';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -48,6 +49,20 @@ export function SignupForm() {
       toast({
         variant: 'destructive',
         title: 'Signup Failed',
+        description: error.message,
+      });
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Google Sign-In Failed',
         description: error.message,
       });
     }
@@ -96,6 +111,20 @@ export function SignupForm() {
             </Button>
           </form>
         </Form>
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+          <GoogleIcon className="mr-2 h-4 w-4" />
+          Google
+        </Button>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('haveAccount')}{' '}
           <Link href="/login" className="font-semibold text-primary hover:underline">
