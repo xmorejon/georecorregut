@@ -22,13 +22,22 @@ import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import type { Language } from '@/lib/types';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardHeader() {
   const { isMobile } = useSidebar();
-  const { t, appName, language, setLanguage } = useAppContext();
+  const { t, language, setLanguage, user } = useAppContext();
+  const router = useRouter();
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang as Language);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
   };
 
   return (
@@ -43,13 +52,13 @@ export default function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100" alt="User Avatar" data-ai-hint="user avatar" />
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarImage src={user?.photoURL || 'https://placehold.co/100x100'} alt="User Avatar" data-ai-hint="user avatar" />
+                <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{user?.email || 'My Account'}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
@@ -75,11 +84,9 @@ export default function DashboardHeader() {
               </DropdownMenuPortal>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/login">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t('logout')}</span>
-              </Link>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t('logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

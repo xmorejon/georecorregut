@@ -1,8 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { Location, Language } from '@/lib/types';
-import { initialLocations, getTranslation, translations } from '@/lib/data';
+import { initialLocations, getTranslation } from '@/lib/data';
+import { useAuth } from '@/hooks/use-auth';
+import type { User } from 'firebase/auth';
+
 
 interface AppContextType {
   locations: Location[];
@@ -15,6 +18,8 @@ interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  user: User | null;
+  authLoading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -24,6 +29,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [language, setLanguage] = useState<Language>('ca');
+  const { user, loading: authLoading } = useAuth();
+
 
   const addLocation = useCallback((location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>) => {
     const newLocation: Location = {
@@ -55,6 +62,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     language,
     setLanguage,
     t,
+    user,
+    authLoading
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

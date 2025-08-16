@@ -2,13 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppContext } from '@/contexts/app-context';
 
 export default function Home() {
   const router = useRouter();
+  const { user, authLoading } = useAppContext();
 
   useEffect(() => {
-    router.replace('/login');
-  }, [router]);
+    if (!authLoading) {
+      if (user) {
+        router.replace('/');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [user, authLoading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
