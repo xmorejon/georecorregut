@@ -89,7 +89,7 @@ export default function DashboardSidebar() {
   }
 
   return (
-    <Sidebar className="hidden md:block w-80 border-r" side="left" collapsible="icon">
+    <Sidebar className="hidden md:block w-80 border-r bg-background" side="left" collapsible="icon">
         <SidebarContent>
             <Tabs defaultValue="search" className="flex flex-col h-full">
             <SidebarHeader>
@@ -129,26 +129,9 @@ export default function DashboardSidebar() {
                                   <p className="text-sm text-muted-foreground">{new Date(location.date).toLocaleDateString()}</p>
                                 </div>
 
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete your location
-                                        and remove your data from our servers.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={(e) => handleDelete(e, location.id)}>Continue</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                                   
                               </div>
                               ))

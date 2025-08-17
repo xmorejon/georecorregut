@@ -120,6 +120,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       place.id,
       callback
     );
+    setSearchTerm(''); // Clear search term after adding location
   }, [addLocation]);
   
   const deleteLocation = useCallback(async (id: string) => {
