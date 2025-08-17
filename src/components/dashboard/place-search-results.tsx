@@ -12,7 +12,7 @@ export function PlaceSearchResults() {
     t,
     placeSearchResults,
     isSearchingPlaces,
-    addLocation,
+    addPlaceAsLocation,
     previewPlace,
     searchTerm,
     locations
@@ -21,7 +21,6 @@ export function PlaceSearchResults() {
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const handleAddLocation = (place: Place) => {
-    // Check if the location (by place id) has already been added
     if (locations.some(loc => loc.id === place.id)) {
         toast({
             variant: 'default',
@@ -31,11 +30,7 @@ export function PlaceSearchResults() {
         return;
     }
     setAddingId(place.id);
-    addLocation(
-      { name: place.name, lat: place.lat, lng: place.lng },
-      () => setAddingId(null), // This is the setLoading callback
-      place.id
-    );
+    addPlaceAsLocation(place, () => setAddingId(null));
   };
 
   if (isSearchingPlaces) {

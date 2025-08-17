@@ -27,7 +27,7 @@ interface AppContextType {
   authLoading: boolean;
   placeSearchResults: Place[];
   isSearchingPlaces: boolean;
-  addPlaceAsLocation: (place: Place) => void;
+  addPlaceAsLocation: (place: Place, setLoading?: (loading: boolean) => void) => void;
   previewPlace: (place: Place) => void;
 }
 
@@ -89,8 +89,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       if (placeId) {
+        // Use setDoc with a specific ID (from Google Places)
         await setDoc(doc(db, 'users', user.uid, 'locations', placeId), newLocationData);
       } else {
+        // Or addDoc for a random ID (e.g., current location)
         await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
       }
       
@@ -120,13 +122,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to remove location.' });
     }
   }, [user, toast]);
-
-  const addPlaceAsLocation = useCallback((place: Place) => {
+  
+  const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
     addLocation({
       name: place.name,
       lat: place.lat,
       lng: place.lng,
-    }, undefined, place.id);
+    }, setLoading, place.id);
   }, [addLocation]);
 
   const previewPlace = useCallback((place: Place) => {
