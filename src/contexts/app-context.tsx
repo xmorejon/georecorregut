@@ -24,6 +24,7 @@ interface AppContextType {
   placeSearchResults: Place[];
   isSearchingPlaces: boolean;
   addPlaceAsLocation: (place: Place) => void;
+  previewPlace: (place: Place) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -56,6 +57,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       lng: place.lng,
     });
   }, [addLocation]);
+
+  const previewPlace = useCallback((place: Place) => {
+    setSelectedLocation({
+      id: place.id,
+      name: place.name,
+      lat: place.lat,
+      lng: place.lng,
+      date: '', 
+      country: '',
+      continent: ''
+    });
+  }, []);
 
   useEffect(() => {
     if (searchTerm.length > 2) {
@@ -102,7 +115,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     authLoading,
     placeSearchResults,
     isSearchingPlaces,
-    addPlaceAsLocation
+    addPlaceAsLocation,
+    previewPlace
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

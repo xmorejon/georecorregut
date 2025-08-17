@@ -12,6 +12,7 @@ export function PlaceSearchResults() {
     placeSearchResults,
     isSearchingPlaces,
     addPlaceAsLocation,
+    previewPlace,
     searchTerm,
   } = useAppContext();
   const { toast } = useToast();
@@ -43,6 +44,7 @@ export function PlaceSearchResults() {
         <div
           key={place.id}
           className="cursor-pointer rounded-lg border p-3 hover:bg-accent/50 transition-colors flex justify-between items-center"
+          onClick={() => previewPlace(place)}
         >
           <div>
             <p className="font-semibold">{place.name}</p>
