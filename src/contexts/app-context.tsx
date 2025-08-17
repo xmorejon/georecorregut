@@ -124,11 +124,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, toast]);
   
   const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
-    addLocation({
-      name: place.name,
-      lat: place.lat,
-      lng: place.lng,
-    }, setLoading, place.id);
+    addLocation(
+      {
+        name: place.name,
+        lat: place.lat,
+        lng: place.lng,
+      },
+      setLoading,
+      place.id
+    );
   }, [addLocation]);
 
   const previewPlace = useCallback((place: Place) => {
