@@ -8,13 +8,13 @@ import type { User } from 'firebase/auth';
 import { searchPlacesByText } from '@/ai/flows/places-flow';
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   locations: Location[];
   filteredLocations: Location[];
-  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>, setLoading?: (loading: boolean) => void) => void;
+  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>, setLoading?: (loading: boolean) => void, placeId?: string) => void;
   deleteLocation: (id: string) => void;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
@@ -54,19 +54,24 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           userLocations.push({ id: doc.id, ...doc.data() } as Location);
         });
         setLocations(userLocations);
+      }, (error) => {
+        console.error("Error fetching locations:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
       });
       return () => unsubscribe();
     } else {
       setLocations([]);
     }
-  }, [user]);
+  }, [user, toast]);
 
   const addLocation = useCallback(async (
     location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>,
-    setLoading?: (loading: boolean) => void
+    setLoading?: (loading: boolean) => void,
+    placeId?: string
   ) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a location.' });
+      setLoading?.(false);
       return;
     }
 
@@ -74,15 +79,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const geoInfo = await reverseGeocode({ lat: location.lat, lng: location.lng });
       
-      const newLocation: Omit<Location, 'id'> = {
-        ...location,
+      const newLocationData = {
+        name: location.name,
+        lat: location.lat,
+        lng: location.lng,
         date: new Date().toISOString(),
         country: geoInfo.country,
         continent: geoInfo.continent,
       };
 
-      await addDoc(collection(db, 'users', user.uid, 'locations'), newLocation);
-
+      if (placeId) {
+        await setDoc(doc(db, 'users', user.uid, 'locations', placeId), newLocationData);
+      } else {
+        await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
+      }
+      
       toast({
         title: t('locationAdded'),
         description: `${location.name} ${t('hasBeenAdded')}`,
@@ -115,7 +126,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       name: place.name,
       lat: place.lat,
       lng: place.lng,
-    });
+    }, undefined, place.id);
   }, [addLocation]);
 
   const previewPlace = useCallback((place: Place) => {

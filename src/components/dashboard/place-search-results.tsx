@@ -15,15 +15,26 @@ export function PlaceSearchResults() {
     addLocation,
     previewPlace,
     searchTerm,
+    locations
   } = useAppContext();
   const { toast } = useToast();
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const handleAddLocation = (place: Place) => {
+    // Check if the location (by place id) has already been added
+    if (locations.some(loc => loc.id === place.id)) {
+        toast({
+            variant: 'default',
+            title: 'Location Already Exists',
+            description: `${place.name} is already in your list.`,
+        });
+        return;
+    }
     setAddingId(place.id);
     addLocation(
       { name: place.name, lat: place.lat, lng: place.lng },
-      () => setAddingId(null) // This is the setLoading callback
+      () => setAddingId(null), // This is the setLoading callback
+      place.id
     );
   };
 
