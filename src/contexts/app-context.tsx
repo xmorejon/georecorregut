@@ -88,9 +88,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         continent: geoInfo.continent,
       };
 
+      const locationRef = placeId 
+        ? doc(db, 'users', user.uid, 'locations', placeId)
+        : doc(collection(db, 'users', user.uid, 'locations'));
+      
       if (placeId) {
         // Use setDoc with a specific ID (from Google Places)
-        await setDoc(doc(db, 'users', user.uid, 'locations', placeId), newLocationData);
+        await setDoc(locationRef, newLocationData);
       } else {
         // Or addDoc for a random ID (e.g., current location)
         await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
