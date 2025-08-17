@@ -87,16 +87,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         country: geoInfo.country,
         continent: geoInfo.continent,
       };
-
-      const locationRef = placeId 
-        ? doc(db, 'users', user.uid, 'locations', placeId)
-        : doc(collection(db, 'users', user.uid, 'locations'));
       
       if (placeId) {
-        // Use setDoc with a specific ID (from Google Places)
+        // Use setDoc with the specific Place ID to create or overwrite a document
+        const locationRef = doc(db, 'users', user.uid, 'locations', placeId);
         await setDoc(locationRef, newLocationData);
       } else {
-        // Or addDoc for a random ID (e.g., current location)
+        // Use addDoc for a random ID (e.g., current location)
         await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
       }
       
@@ -112,6 +109,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading?.(false);
     }
   }, [user, t, toast]);
+  
+  const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
+    addLocation(
+      {
+        name: place.name,
+        lat: place.lat,
+        lng: place.lng,
+      },
+      setLoading,
+      place.id
+    );
+  }, [addLocation]);
 
   const deleteLocation = useCallback(async (id: string) => {
     if (!user) {
@@ -126,18 +135,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to remove location.' });
     }
   }, [user, toast]);
-  
-  const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
-    addLocation(
-      {
-        name: place.name,
-        lat: place.lat,
-        lng: place.lng,
-      },
-      setLoading,
-      place.id
-    );
-  }, [addLocation]);
 
   const previewPlace = useCallback((place: Place) => {
     setSelectedLocation({
