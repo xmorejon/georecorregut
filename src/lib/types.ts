@@ -15,3 +15,11 @@ export type Translations = {
 };
 
 export type Language = 'ca' | 'es' | 'en';
+
+export interface Place {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+}

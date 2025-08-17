@@ -11,6 +11,7 @@ import { Download, Globe, Map, Plus, Search, Upload } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { Sidebar, SidebarContent, SidebarHeader } from '../ui/sidebar';
+import { PlaceSearchResults } from './place-search-results';
 
 export default function DashboardSidebar() {
   const {
@@ -87,20 +88,24 @@ export default function DashboardSidebar() {
                     </div>
                     <ScrollArea className="flex-1">
                         <div className="space-y-2">
-                        {filteredLocations.length > 0 ? (
-                            filteredLocations.map(location => (
-                            <div
-                                key={location.id}
-                                onClick={() => setSelectedLocation(location)}
-                                className="cursor-pointer rounded-lg border p-3 hover:bg-accent transition-colors"
-                            >
-                                <p className="font-semibold">{location.name}</p>
-                                <p className="text-sm text-muted-foreground">{location.date}</p>
-                            </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-muted-foreground">{t('noResults')}</p>
-                        )}
+                          <PlaceSearchResults />
+
+                          <h2 className="text-lg font-semibold mt-4 pt-4 border-t">{t('myLocations')}</h2>
+                          {filteredLocations.length > 0 ? (
+                              filteredLocations.map(location => (
+                              <div
+                                  key={location.id}
+                                  onClick={() => setSelectedLocation(location)}
+                                  className="cursor-pointer rounded-lg border p-3 hover:bg-accent transition-colors"
+                              >
+                                  <p className="font-semibold">{location.name}</p>
+                                  <p className="text-sm text-muted-foreground">{location.date}</p>
+                              </div>
+                              ))
+                          ) : (
+                            searchTerm.length === 0 && <p className="text-center text-muted-foreground">{t('noLocations')}</p>
+                          )}
+                          {filteredLocations.length === 0 && searchTerm.length > 0 && <p className="text-center text-muted-foreground">{t('noResults')}</p>}
                         </div>
                     </ScrollArea>
                 </div>

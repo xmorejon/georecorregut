@@ -1,10 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
-import type { Location, Language } from '@/lib/types';
+import type { Location, Language, Place } from '@/lib/types';
 import { initialLocations, getTranslation } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from 'firebase/auth';
+import { searchPlacesByText } from '@/ai/flows/places-flow';
 
 
 interface AppContextType {
@@ -20,6 +21,9 @@ interface AppContextType {
   t: (key: string) => string;
   user: User | null;
   authLoading: boolean;
+  placeSearchResults: Place[];
+  isSearchingPlaces: boolean;
+  addPlaceAsLocation: (place: Place) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -30,6 +34,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [language, setLanguage] = useState<Language>('ca');
   const { user, loading: authLoading } = useAuth();
+  const [placeSearchResults, setPlaceSearchResults] = useState<Place[]>([]);
+  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
 
 
   const addLocation = useCallback((location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>) => {
@@ -43,7 +49,37 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setLocations(prev => [newLocation, ...prev]);
   }, []);
 
+  const addPlaceAsLocation = useCallback((place: Place) => {
+    addLocation({
+      name: place.name,
+      lat: place.lat,
+      lng: place.lng,
+    });
+  }, [addLocation]);
+
+  useEffect(() => {
+    if (searchTerm.length > 2) {
+      const handleSearch = async () => {
+        setIsSearchingPlaces(true);
+        try {
+          const results = await searchPlacesByText({ query: searchTerm });
+          setPlaceSearchResults(results);
+        } catch (error) {
+          console.error("Error searching places:", error);
+          setPlaceSearchResults([]);
+        } finally {
+          setIsSearchingPlaces(false);
+        }
+      };
+      const debounceTimer = setTimeout(handleSearch, 300);
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setPlaceSearchResults([]);
+    }
+  }, [searchTerm]);
+
   const filteredLocations = useMemo(() => {
+    if (!searchTerm) return locations;
     return locations.filter(location =>
       location.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -63,7 +99,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setLanguage,
     t,
     user,
-    authLoading
+    authLoading,
+    placeSearchResults,
+    isSearchingPlaces,
+    addPlaceAsLocation
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
