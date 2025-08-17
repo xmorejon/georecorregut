@@ -7,6 +7,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { Place } from '@/lib/types';
+import { Continents } from '@/lib/data';
 
 const PlacesSearchInputSchema = z.object({
   query: z.string().describe('The text string to search for places.'),
@@ -20,10 +21,22 @@ const PlaceSchema = z.object({
   address: z.string(),
   lat: z.number(),
   lng: z.number(),
+  country: z.string(),
+  continent: z.string(),
 });
 
 const PlacesSearchOutputSchema = z.array(PlaceSchema);
 export type PlacesSearchOutput = z.infer<typeof PlacesSearchOutputSchema>;
+
+// Helper to get continent from country code
+const getContinent = (countryCode: string): string => {
+    for (const continent in Continents) {
+      if (Continents[continent as keyof typeof Continents].includes(countryCode)) {
+        return continent;
+      }
+    }
+    return 'Unknown';
+  }
 
 // This is an exported wrapper function that calls the flow
 export async function searchPlacesByText(input: PlacesSearchInput): Promise<PlacesSearchOutput> {
@@ -45,7 +58,7 @@ const searchPlacesByTextFlow = ai.defineFlow(
     const endpoint = `https://places.googleapis.com/v1/places:searchText`;
 
     const body = {
-      textQuery: `city in ${input.query}`,
+      textQuery: input.query,
       includedType: 'locality',
     };
 
@@ -55,7 +68,7 @@ const searchPlacesByTextFlow = ai.defineFlow(
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id',
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id,places.addressComponents',
         },
         body: JSON.stringify(body),
       });
@@ -72,13 +85,22 @@ const searchPlacesByTextFlow = ai.defineFlow(
         return [];
       }
 
-      const results: Place[] = data.places.map((place: any) => ({
-        id: place.id,
-        name: place.displayName.text,
-        address: place.formattedAddress,
-        lat: place.location.latitude,
-        lng: place.location.longitude,
-      }));
+      const results: Place[] = data.places.map((place: any) => {
+        const countryComponent = place.addressComponents?.find((c: any) => c.types.includes('country'));
+        const countryName = countryComponent?.longText || 'Unknown';
+        const countryCode = countryComponent?.shortText || '';
+        const continentName = getContinent(countryCode);
+
+        return {
+            id: place.id,
+            name: place.displayName.text,
+            address: place.formattedAddress,
+            lat: place.location.latitude,
+            lng: place.location.longitude,
+            country: countryName,
+            continent: continentName,
+        };
+      });
 
       return results;
 

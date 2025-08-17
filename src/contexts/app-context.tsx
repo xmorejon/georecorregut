@@ -6,15 +6,14 @@ import { getTranslation } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from 'firebase/auth';
 import { searchPlacesByText } from '@/ai/flows/places-flow';
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy, setDoc, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   locations: Location[];
   filteredLocations: Location[];
-  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'> & { id?: string }, setLoading?: (loading: boolean) => void) => void;
+  addPlaceAsLocation: (place: Place, callback?: () => void) => void;
   deleteLocation: (id: string) => void;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
@@ -27,8 +26,12 @@ interface AppContextType {
   authLoading: boolean;
   placeSearchResults: Place[];
   isSearchingPlaces: boolean;
-  addPlaceAsLocation: (place: Place, setLoading?: (loading: boolean) => void) => void;
   previewPlace: (place: Place) => void;
+  addLocation: (
+    details: { lat: number; lng: number; name: string, country: string, continent: string },
+    placeId?: string,
+    callback?: () => void
+  ) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -65,65 +68,60 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, toast]);
 
   const addLocation = useCallback(async (
-    location: Omit<Location, 'date' | 'country' | 'continent'> & { id?: string },
-    setLoading?: (loading: boolean) => void
+    details: { lat: number; lng: number; name: string, country: string, continent: string },
+    placeId?: string,
+    callback?: () => void
   ) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a location.' });
-      setLoading?.(false);
+      callback?.();
       return;
     }
   
-    setLoading?.(true);
     try {
-      const geoInfo = await reverseGeocode({ lat: location.lat, lng: location.lng });
-      
-      const newLocationData = {
-        name: location.name,
-        lat: location.lat,
-        lng: location.lng,
+      const locationData = {
+        name: details.name,
+        lat: details.lat,
+        lng: details.lng,
         date: new Date().toISOString(),
-        country: geoInfo.country,
-        continent: geoInfo.continent,
+        country: details.country || 'Unknown',
+        continent: details.continent || 'Unknown',
       };
-  
-      // The document path is users/{userId}/locations/{locationId}
-      const userLocationsCollection = collection(db, 'users', user.uid, 'locations');
-  
-      if (location.id) {
-        // If an ID is provided (from a Place), use it to set the document.
-        // This will create or overwrite the document with the specified ID.
-        await setDoc(doc(userLocationsCollection, location.id), newLocationData);
-      } else {
-        // If no ID is provided (e.g., current location), Firestore will generate one.
-        await addDoc(userLocationsCollection, newLocationData);
-      }
       
+      const docRef = placeId 
+        ? doc(db, 'users', user.uid, 'locations', placeId)
+        : doc(collection(db, 'users', user.uid, 'locations'));
+      
+      await setDoc(docRef, locationData);
+  
       toast({
         title: t('locationAdded'),
-        description: `${location.name} ${t('hasBeenAdded')}`,
+        description: `${details.name} ${t('hasBeenAdded')}`,
       });
   
     } catch (error) {
       console.error("Error adding location:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to add location.' });
     } finally {
-      setLoading?.(false);
+      callback?.();
     }
   }, [user, t, toast]);
   
-  const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
+
+  const addPlaceAsLocation = useCallback(async (place: Place, callback?: () => void) => {
     addLocation(
       {
-        id: place.id, // Pass the ID from the place
-        name: place.name,
         lat: place.lat,
         lng: place.lng,
+        name: place.name,
+        country: place.country,
+        continent: place.continent,
       },
-      setLoading
+      place.id,
+      callback
     );
   }, [addLocation]);
-
+  
   const deleteLocation = useCallback(async (id: string) => {
     if (!user) {
         toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to delete a location.' });
@@ -140,13 +138,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const previewPlace = useCallback((place: Place) => {
     setSelectedLocation({
-      id: place.id,
-      name: place.name,
-      lat: place.lat,
-      lng: place.lng,
+      ...place,
       date: '',
-      country: '',
-      continent: ''
     });
   }, []);
 
@@ -180,7 +173,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       location.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [locations, searchTerm]);
-
+  
   const value = {
     locations,
     filteredLocations,
