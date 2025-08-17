@@ -1,15 +1,6 @@
 import type { Location, Translations, Language } from './types';
 
-export const initialLocations: Location[] = [
-  { id: '1', name: 'Barcelona, Spain', lat: 41.3851, lng: 2.1734, date: '2023-05-20', country: 'Spain', continent: 'Europe' },
-  { id: '2', name: 'New York, USA', lat: 40.7128, lng: -74.0060, date: '2022-11-15', country: 'USA', continent: 'North America' },
-  { id: '3', name: 'Tokyo, Japan', lat: 35.6895, lng: 139.6917, date: '2024-03-10', country: 'Japan', continent: 'Asia' },
-  { id: '4', name: 'Sydney, Australia', lat: -33.8688, lng: 151.2093, date: '2023-01-25', country: 'Australia', continent: 'Australia' },
-  { id: '5', name: 'Cairo, Egypt', lat: 30.0444, lng: 31.2357, date: '2023-09-02', country: 'Egypt', continent: 'Africa' },
-  { id: '6', name: 'Rio de Janeiro, Brazil', lat: -22.9068, lng: -43.1729, date: '2024-02-18', country: 'Brazil', continent: 'South America' },
-  { id: '7', name: 'Paris, France', lat: 48.8566, lng: 2.3522, date: '2023-06-12', country: 'France', continent: 'Europe' },
-  { id: '8', name: 'London, UK', lat: 51.5074, lng: -0.1278, date: '2023-07-01', country: 'United Kingdom', continent: 'Europe' },
-];
+export const initialLocations: Location[] = [];
 
 export const translations: Translations = {
   ca: {
@@ -132,7 +123,7 @@ export const translations: Translations = {
     noAccount: 'Don\'t have an account?',
     signup: 'Sign up',
     signupTitle: 'Create an Account',
-    signupSubtitle: 'Start your journey with us',
+    subtitle: 'Start your journey with us',
     haveAccount: 'Already have an account?',
     locationRecorded: 'Current location recorded!',
     errorRecording: 'Error recording location.',

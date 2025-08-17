@@ -2,16 +2,20 @@
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { Location, Language, Place } from '@/lib/types';
-import { initialLocations, getTranslation } from '@/lib/data';
+import { getTranslation } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from 'firebase/auth';
 import { searchPlacesByText } from '@/ai/flows/places-flow';
-
+import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   locations: Location[];
   filteredLocations: Location[];
-  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>) => void;
+  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>, setLoading?: (loading: boolean) => void) => void;
+  deleteLocation: (id: string) => void;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   selectedLocation: Location | null;
@@ -30,25 +34,81 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [locations, setLocations] = useState<Location[]>(initialLocations);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [language, setLanguage] = useState<Language>('ca');
   const { user, loading: authLoading } = useAuth();
   const [placeSearchResults, setPlaceSearchResults] = useState<Place[]>([]);
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
+  const { toast } = useToast();
 
+  const t = useMemo(() => getTranslation(language), [language]);
 
-  const addLocation = useCallback((location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>) => {
-    const newLocation: Location = {
-      ...location,
-      id: new Date().toISOString(),
-      date: new Date().toLocaleDateString(),
-      country: 'Unknown',
-      continent: 'Unknown'
-    };
-    setLocations(prev => [newLocation, ...prev]);
-  }, []);
+  useEffect(() => {
+    if (user) {
+      const q = query(collection(db, 'users', user.uid, 'locations'), orderBy('date', 'desc'));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const userLocations: Location[] = [];
+        querySnapshot.forEach((doc) => {
+          userLocations.push({ id: doc.id, ...doc.data() } as Location);
+        });
+        setLocations(userLocations);
+      });
+      return () => unsubscribe();
+    } else {
+      setLocations([]);
+    }
+  }, [user]);
+
+  const addLocation = useCallback(async (
+    location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>,
+    setLoading?: (loading: boolean) => void
+  ) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a location.' });
+      return;
+    }
+
+    setLoading?.(true);
+    try {
+      const geoInfo = await reverseGeocode({ lat: location.lat, lng: location.lng });
+      
+      const newLocation: Omit<Location, 'id'> = {
+        ...location,
+        date: new Date().toISOString(),
+        country: geoInfo.country,
+        continent: geoInfo.continent,
+      };
+
+      await addDoc(collection(db, 'users', user.uid, 'locations'), newLocation);
+
+      toast({
+        title: t('locationAdded'),
+        description: `${location.name} ${t('hasBeenAdded')}`,
+      });
+
+    } catch (error) {
+      console.error("Error adding location:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to add location.' });
+    } finally {
+      setLoading?.(false);
+    }
+  }, [user, t, toast]);
+
+  const deleteLocation = useCallback(async (id: string) => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to delete a location.' });
+        return;
+    }
+    try {
+        await deleteDoc(doc(db, 'users', user.uid, 'locations', id));
+        toast({ title: 'Location Removed', description: 'The location has been removed from your list.'});
+    } catch (error) {
+        console.error("Error deleting location: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to remove location.' });
+    }
+  }, [user, toast]);
 
   const addPlaceAsLocation = useCallback((place: Place) => {
     addLocation({
@@ -64,7 +124,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       name: place.name,
       lat: place.lat,
       lng: place.lng,
-      date: '', 
+      date: '',
       country: '',
       continent: ''
     });
@@ -97,13 +157,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       location.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [locations, searchTerm]);
-  
-  const t = useMemo(() => getTranslation(language), [language]);
 
   const value = {
     locations,
     filteredLocations,
     addLocation,
+    deleteLocation,
     searchTerm,
     setSearchTerm,
     selectedLocation,

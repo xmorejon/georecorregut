@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Place } from '@/lib/types';
 
@@ -11,18 +12,19 @@ export function PlaceSearchResults() {
     t,
     placeSearchResults,
     isSearchingPlaces,
-    addPlaceAsLocation,
+    addLocation,
     previewPlace,
     searchTerm,
   } = useAppContext();
   const { toast } = useToast();
+  const [addingId, setAddingId] = useState<string | null>(null);
 
   const handleAddLocation = (place: Place) => {
-    addPlaceAsLocation(place);
-    toast({
-      title: t('locationAdded'),
-      description: `${place.name} ${t('hasBeenAdded')}`,
-    });
+    setAddingId(place.id);
+    addLocation(
+      { name: place.name, lat: place.lat, lng: place.lng },
+      () => setAddingId(null) // This is the setLoading callback
+    );
   };
 
   if (isSearchingPlaces) {
@@ -51,15 +53,20 @@ export function PlaceSearchResults() {
             <p className="text-sm text-muted-foreground">{place.address}</p>
           </div>
           <Button
-            size="sm"
+            size="icon"
             variant="ghost"
-            className="shrink-0"
+            className="shrink-0 h-8 w-8"
+            disabled={addingId === place.id}
             onClick={(e) => {
               e.stopPropagation();
               handleAddLocation(place);
             }}
           >
-            <Plus className="h-4 w-4" />
+            {addingId === place.id ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
           </Button>
         </div>
       ))}

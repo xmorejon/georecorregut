@@ -7,11 +7,22 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, Globe, Map, Plus, Search, Upload } from 'lucide-react';
+import { Download, Globe, Loader, Plus, Search, Trash2, Upload } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { Sidebar, SidebarContent, SidebarHeader } from '../ui/sidebar';
 import { PlaceSearchResults } from './place-search-results';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function DashboardSidebar() {
   const {
@@ -22,11 +33,13 @@ export default function DashboardSidebar() {
     locations,
     setSelectedLocation,
     addLocation,
+    deleteLocation,
   } = useAppContext();
   const { toast } = useToast();
+  const [isRecording, setIsRecording] = useState(false);
 
-  const uniqueContinents = [...new Set(locations.map(l => l.continent))];
-  const uniqueCountries = [...new Set(locations.map(l => l.country))];
+  const uniqueContinents = [...new Set(locations.map(l => l.continent).filter(c => c && c !== 'Unknown'))];
+  const uniqueCountries = [...new Set(locations.map(l => l.country).filter(c => c && c !== 'Unknown'))];
 
   const handleRecordLocation = () => {
     if (!navigator.geolocation) {
@@ -34,17 +47,18 @@ export default function DashboardSidebar() {
       return;
     }
 
+    setIsRecording(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         addLocation({
           name: 'Current Location',
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        });
-        toast({ title: t('locationRecorded') });
+        }, setIsRecording);
       },
       () => {
         toast({ variant: 'destructive', title: t('errorRecording'), description: 'Unable to retrieve your location.' });
+        setIsRecording(false);
       }
     );
   };
@@ -60,6 +74,11 @@ export default function DashboardSidebar() {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
     toast({ title: t('dataExported') });
+  }
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteLocation(id);
   }
 
   return (
@@ -96,10 +115,34 @@ export default function DashboardSidebar() {
                               <div
                                   key={location.id}
                                   onClick={() => setSelectedLocation(location)}
-                                  className="cursor-pointer rounded-lg border p-3 hover:bg-accent transition-colors"
+                                  className="cursor-pointer rounded-lg border p-3 hover:bg-accent transition-colors flex justify-between items-center group"
                               >
+                                <div>
                                   <p className="font-semibold">{location.name}</p>
-                                  <p className="text-sm text-muted-foreground">{location.date}</p>
+                                  <p className="text-sm text-muted-foreground">{new Date(location.date).toLocaleDateString()}</p>
+                                </div>
+
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete your location
+                                        and remove your data from our servers.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={(e) => handleDelete(e, location.id)}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                                  
                               </div>
                               ))
                           ) : (
@@ -152,8 +195,9 @@ export default function DashboardSidebar() {
 
             <TabsContent value="data" className="flex-1 overflow-hidden">
                 <div className="h-full p-4 space-y-4">
-                     <Button className="w-full" onClick={handleRecordLocation}>
-                        <Plus className="mr-2 h-4 w-4" /> {t('recordLocation')}
+                     <Button className="w-full" onClick={handleRecordLocation} disabled={isRecording}>
+                        {isRecording ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                        {t('recordLocation')}
                     </Button>
                     <Card>
                         <CardHeader>
