@@ -46,6 +46,7 @@ const searchPlacesByTextFlow = ai.defineFlow(
 
     const body = {
       textQuery: input.query,
+      includedType: 'locality'
     };
 
     try {
