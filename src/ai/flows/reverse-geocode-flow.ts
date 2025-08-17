@@ -59,11 +59,11 @@ const reverseGeocodeFlow = ai.defineFlow(
 
       if (data.status === 'OK' && data.results.length > 0) {
         const countryResult = data.results[0];
-        const country = countryResult.address_components.find((c: any) => c.types.includes('country'));
+        const countryComponent = countryResult.address_components.find((c: any) => c.types.includes('country'));
         
-        if (country) {
-          const countryName = country.long_name;
-          const countryCode = country.short_name;
+        if (countryComponent) {
+          const countryName = countryComponent.long_name;
+          const countryCode = countryComponent.short_name;
           const continentName = getContinent(countryCode);
           return { country: countryName, continent: continentName };
         }
