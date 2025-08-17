@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,8 +38,13 @@ export default function DashboardSidebar() {
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
 
-  const uniqueContinents = [...new Set(locations.map(l => l.continent).filter(c => c && c !== 'Unknown'))];
-  const uniqueCountries = [...new Set(locations.map(l => l.country).filter(c => c && c !== 'Unknown'))];
+  const uniqueContinents = useMemo(() => {
+    return [...new Set(locations.map(l => l.continent).filter(c => c && c !== 'Unknown'))];
+  }, [locations]);
+
+  const uniqueCountries = useMemo(() => {
+    return [...new Set(locations.map(l => l.country).filter(c => c && c !== 'Unknown'))];
+  }, [locations]);
 
   const handleRecordLocation = () => {
     if (!navigator.geolocation) {
@@ -54,7 +59,7 @@ export default function DashboardSidebar() {
           name: 'Current Location',
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        }, setIsRecording);
+        }, undefined, () => setIsRecording(false));
       },
       () => {
         toast({ variant: 'destructive', title: t('errorRecording'), description: 'Unable to retrieve your location.' });
@@ -124,7 +129,7 @@ export default function DashboardSidebar() {
 
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100">
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </AlertDialogTrigger>
