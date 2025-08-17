@@ -39,11 +39,13 @@ export default function DashboardSidebar() {
   const [isRecording, setIsRecording] = useState(false);
 
   const uniqueContinents = useMemo(() => {
-    return [...new Set(locations.map(l => l.continent).filter(c => c && c !== 'Unknown'))];
+    const continents = locations.map(l => l.continent).filter(c => c && c !== 'Unknown');
+    return [...new Set(continents)];
   }, [locations]);
 
   const uniqueCountries = useMemo(() => {
-    return [...new Set(locations.map(l => l.country).filter(c => c && c !== 'Unknown'))];
+    const countries = locations.map(l => l.country).filter(c => c && c !== 'Unknown');
+    return [...new Set(countries)];
   }, [locations]);
 
   const handleRecordLocation = () => {
