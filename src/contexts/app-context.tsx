@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 interface AppContextType {
   locations: Location[];
   filteredLocations: Location[];
-  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>, setLoading?: (loading: boolean) => void, placeId?: string) => void;
+  addLocation: (location: Omit<Location, 'id' | 'date' | 'country' | 'continent'> & { id?: string }, setLoading?: (loading: boolean) => void) => void;
   deleteLocation: (id: string) => void;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
@@ -65,9 +65,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, toast]);
 
   const addLocation = useCallback(async (
-    location: Omit<Location, 'id' | 'date' | 'country' | 'continent'>,
-    setLoading?: (loading: boolean) => void,
-    placeId?: string
+    location: Omit<Location, 'date' | 'country' | 'continent'>,
+    setLoading?: (loading: boolean) => void
   ) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a location.' });
@@ -87,13 +86,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         country: geoInfo.country,
         continent: geoInfo.continent,
       };
-      
-      if (placeId) {
-        // Use setDoc with the specific Place ID to create or overwrite a document
-        const locationRef = doc(db, 'users', user.uid, 'locations', placeId);
+
+      if (location.id) {
+        // If an ID is provided (from a Place), use it to set the document.
+        const locationRef = doc(db, 'users', user.uid, 'locations', location.id);
         await setDoc(locationRef, newLocationData);
       } else {
-        // Use addDoc for a random ID (e.g., current location)
+        // If no ID is provided (e.g., current location), Firestore will generate one.
         await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
       }
       
@@ -113,12 +112,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const addPlaceAsLocation = useCallback((place: Place, setLoading?: (loading: boolean) => void) => {
     addLocation(
       {
+        id: place.id, // Pass the ID from the place
         name: place.name,
         lat: place.lat,
         lng: place.lng,
       },
-      setLoading,
-      place.id
+      setLoading
     );
   }, [addLocation]);
 
