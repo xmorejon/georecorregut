@@ -148,24 +148,27 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.length > 2) {
-      const handleSearch = async () => {
+    const handleSearch = () => {
+      if (searchTerm.length > 2) {
         setIsSearchingPlaces(true);
-        try {
-          const results = await searchPlacesByText({ query: searchTerm });
-          setPlaceSearchResults(results);
-        } catch (error) {
-          console.error("Error searching places:", error);
-          setPlaceSearchResults([]);
-        } finally {
-          setIsSearchingPlaces(false);
-        }
-      };
-      const debounceTimer = setTimeout(handleSearch, 300);
-      return () => clearTimeout(debounceTimer);
-    } else {
-      setPlaceSearchResults([]);
-    }
+        searchPlacesByText({ query: searchTerm })
+          .then(results => {
+            setPlaceSearchResults(results);
+          })
+          .catch(error => {
+            console.error("Error searching places:", error);
+            setPlaceSearchResults([]);
+          })
+          .finally(() => {
+            setIsSearchingPlaces(false);
+          });
+      } else {
+        setPlaceSearchResults([]);
+      }
+    };
+
+    const debounceTimer = setTimeout(handleSearch, 300);
+    return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
   const filteredLocations = useMemo(() => {
