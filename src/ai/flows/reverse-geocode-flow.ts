@@ -34,7 +34,6 @@ const getContinent = (countryCode: string): string => {
   return 'Unknown';
 }
 
-
 const reverseGeocodeFlow = ai.defineFlow(
   {
     name: 'reverseGeocodeFlow',
@@ -47,7 +46,7 @@ const reverseGeocodeFlow = ai.defineFlow(
       throw new Error('Google Maps API key is not configured.');
     }
 
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&result_type=country`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
     
     try {
       const response = await fetch(url);
@@ -58,17 +57,22 @@ const reverseGeocodeFlow = ai.defineFlow(
       const data = await response.json();
 
       if (data.status === 'OK' && data.results.length > 0) {
-        const countryResult = data.results[0];
-        const countryComponent = countryResult.address_components.find((c: any) => c.types.includes('country'));
-        
-        if (countryComponent) {
-          const countryName = countryComponent.long_name;
-          const countryCode = countryComponent.short_name;
-          const continentName = getContinent(countryCode);
-          return { country: countryName, continent: continentName };
+        // Find the most specific result that has a country component
+        for (const result of data.results) {
+          const countryComponent = result.address_components.find((c: any) => 
+            c.types.includes('country') && c.types.includes('political')
+          );
+          
+          if (countryComponent) {
+            const countryName = countryComponent.long_name;
+            const countryCode = countryComponent.short_name;
+            const continentName = getContinent(countryCode);
+            return { country: countryName, continent: continentName };
+          }
         }
       }
 
+      console.warn("Could not find country for coordinates:", lat, lng);
       return { country: 'Unknown', continent: 'Unknown' };
 
     } catch (error) {
