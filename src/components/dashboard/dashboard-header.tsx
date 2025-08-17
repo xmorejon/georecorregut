@@ -88,11 +88,9 @@ export default function DashboardHeader() {
               </DropdownMenuPortal>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild>
-              <div onClick={handleLogout} className="flex items-center w-full">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t('logout')}</span>
-              </div>
+            <DropdownMenuItem onSelect={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t('logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
