@@ -6,6 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { Continents } from '@/lib/data';
 
 const GeocodeInputSchema = z.object({
   lat: z.number().describe('The latitude.'),
@@ -23,39 +24,55 @@ export async function reverseGeocode(input: GeocodeInput): Promise<GeocodeOutput
   return reverseGeocodeFlow(input);
 }
 
+// Helper to get continent from country code
+const getContinent = (countryCode: string): string => {
+  for (const continent in Continents) {
+    if (Continents[continent as keyof typeof Continents].includes(countryCode)) {
+      return continent;
+    }
+  }
+  return 'Unknown';
+}
+
+
 const reverseGeocodeFlow = ai.defineFlow(
   {
     name: 'reverseGeocodeFlow',
     inputSchema: GeocodeInputSchema,
     outputSchema: GeocodeOutputSchema,
   },
-  async (input) => {
-    const prompt = `
-      You are a helpful geography assistant. Based on the provided latitude and longitude, identify the country and continent.
-      Latitude: ${input.lat}
-      Longitude: ${input.lng}
-      
-      Provide the full name of the country and the continent.
-      Respond in a structured JSON format with "country" and "continent" keys.
-      For example: {"country": "Spain", "continent": "Europe"}
-    `;
+  async ({ lat, lng }) => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      throw new Error('Google Maps API key is not configured.');
+    }
 
-    const llmResponse = await ai.generate({
-      prompt: prompt,
-      config: {
-        temperature: 0,
-      }
-    });
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&result_type=country`;
     
     try {
-      const text = llmResponse.text();
-      // Clean up potential markdown formatting
-      const jsonText = text.replace(/```json\n|\n```/g, '').trim();
-      const parsed = JSON.parse(jsonText);
-      return GeocodeOutputSchema.parse(parsed);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Geocoding API request failed with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results.length > 0) {
+        const countryResult = data.results[0];
+        const country = countryResult.address_components.find((c: any) => c.types.includes('country'));
+        
+        if (country) {
+          const countryName = country.long_name;
+          const countryCode = country.short_name;
+          const continentName = getContinent(countryCode);
+          return { country: countryName, continent: continentName };
+        }
+      }
+
+      return { country: 'Unknown', continent: 'Unknown' };
+
     } catch (error) {
-      console.error('Error parsing reverse geocoding response:', error);
-      // Fallback in case of parsing error
+      console.error('Error during reverse geocoding:', error);
       return { country: 'Unknown', continent: 'Unknown' };
     }
   }
