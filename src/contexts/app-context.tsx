@@ -65,7 +65,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, toast]);
 
   const addLocation = useCallback(async (
-    location: Omit<Location, 'date' | 'country' | 'continent'>,
+    location: Omit<Location, 'date' | 'country' | 'continent'> & { id?: string },
     setLoading?: (loading: boolean) => void
   ) => {
     if (!user) {
@@ -73,7 +73,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading?.(false);
       return;
     }
-
+  
     setLoading?.(true);
     try {
       const geoInfo = await reverseGeocode({ lat: location.lat, lng: location.lng });
@@ -86,21 +86,24 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         country: geoInfo.country,
         continent: geoInfo.continent,
       };
-
+  
+      // The document path is users/{userId}/locations/{locationId}
+      const userLocationsCollection = collection(db, 'users', user.uid, 'locations');
+  
       if (location.id) {
         // If an ID is provided (from a Place), use it to set the document.
-        const locationRef = doc(db, 'users', user.uid, 'locations', location.id);
-        await setDoc(locationRef, newLocationData);
+        // This will create or overwrite the document with the specified ID.
+        await setDoc(doc(userLocationsCollection, location.id), newLocationData);
       } else {
         // If no ID is provided (e.g., current location), Firestore will generate one.
-        await addDoc(collection(db, 'users', user.uid, 'locations'), newLocationData);
+        await addDoc(userLocationsCollection, newLocationData);
       }
       
       toast({
         title: t('locationAdded'),
         description: `${location.name} ${t('hasBeenAdded')}`,
       });
-
+  
     } catch (error) {
       console.error("Error adding location:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to add location.' });
