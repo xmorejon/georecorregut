@@ -201,7 +201,6 @@ export default function DashboardSidebar() {
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <Button variant="outline" className="w-full"><Upload className="mr-2 h-4 w-4" />{t('importCSV')}</Button>
-                            <Button variant="outline" className="w-full"><Upload className="mr-2 h-4 w-4" />{t('importGPX')}</Button>
                             <Button variant="outline" className="w-full"><Upload className="mr-2 h-4 w-4" />{t('importGoogle')}</Button>
                         </CardContent>
                     </Card>
