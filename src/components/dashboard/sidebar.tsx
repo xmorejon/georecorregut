@@ -34,6 +34,7 @@ export default function DashboardSidebar() {
     setSelectedLocation,
     addLocation,
     deleteLocation,
+    setActiveTab,
   } = useAppContext();
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
@@ -91,8 +92,8 @@ export default function DashboardSidebar() {
   return (
     <Sidebar className="hidden md:block w-80 border-r bg-background" side="left" collapsible="icon">
         <SidebarContent>
-            <Tabs defaultValue="search" className="flex flex-col h-full">
-            <SidebarHeader>
+            <Tabs defaultValue="search" className="flex flex-col h-full" onValueChange={setActiveTab}>
+                <SidebarHeader>
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block"/> {t('search')}</TabsTrigger>
                     <TabsTrigger value="stats"><Globe className="h-4 w-4 mr-1 inline-block"/> {t('stats')}</TabsTrigger>

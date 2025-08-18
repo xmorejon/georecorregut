@@ -1,4 +1,6 @@
-# Firebase Studio
+# GeoRecorregut
+
+Is an app to keep track the places you have visited and highlight how many countries you have travelled to.
 
 This is a NextJS starter in Firebase Studio.
 

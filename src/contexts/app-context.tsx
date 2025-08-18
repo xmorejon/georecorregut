@@ -27,6 +27,8 @@ interface AppContextType {
   placeSearchResults: Place[];
   isSearchingPlaces: boolean;
   previewPlace: (place: Place) => void;
+  activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   addLocation: (
     details: { lat: number; lng: number; name: string, country: string, continent: string },
     placeId?: string,
@@ -45,6 +47,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [placeSearchResults, setPlaceSearchResults] = useState<Place[]>([]);
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('search');
 
   const t = useMemo(() => getTranslation(language), [language]);
 
@@ -192,7 +195,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     placeSearchResults,
     isSearchingPlaces,
     addPlaceAsLocation,
-    previewPlace
+ previewPlace,
+ activeTab,
+    setActiveTab,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
