@@ -119,7 +119,12 @@ export default function DashboardSidebar() {
 
                           <h2 className="text-lg font-semibold mt-4 pt-4 border-t">{t('myLocations')}</h2>
                           {filteredLocations.length > 0 ? (
-                              filteredLocations.map(location => (
+                              filteredLocations
+                              .sort((a, b) => {
+                                  if (a.country < b.country) return -1;
+                                  if (a.country > b.country) return 1;
+                                  return a.name.localeCompare(b.name);
+                              }).map(location => (
                               <div
                                   key={location.id}
                                   onClick={() => setSelectedLocation(location)}
@@ -127,7 +132,7 @@ export default function DashboardSidebar() {
                               >
                                 <div>
                                   <p className="font-semibold">{location.name}</p>
-                                  <p className="text-sm text-muted-foreground">{new Date(location.date).toLocaleDateString()}</p>
+                                  <p className="text-sm text-muted-foreground">{location.country}</p>
                                 </div>
 
                                 <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
