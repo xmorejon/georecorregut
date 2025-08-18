@@ -11,7 +11,7 @@ import { Download, Globe, Loader, Plus, Search, Trash2, Upload } from 'lucide-re
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { Sidebar, SidebarContent, SidebarHeader } from '../ui/sidebar';
-import { PlaceSearchResults } from './place-search-results';
+import { PlaceSearchResults } from './place-search-results'; // Ensure this import is correct
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,7 +37,6 @@ export default function DashboardSidebar() {
     setActiveTab,
   } = useAppContext();
   const { toast } = useToast();
-  const [isRecording, setIsRecording] = useState(false);
 
   const uniqueContinents = useMemo(() => {
     const continents = locations.map(l => l.continent).filter(c => c && c !== 'Unknown');
@@ -49,27 +48,6 @@ export default function DashboardSidebar() {
     return [...new Set(countries)];
   }, [locations]);
 
-  const handleRecordLocation = () => {
-    if (!navigator.geolocation) {
-      toast({ variant: 'destructive', title: t('errorRecording'), description: 'Geolocation is not supported by your browser.' });
-      return;
-    }
-
-    setIsRecording(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        addLocation({
-          name: 'Current Location',
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        }, undefined, () => setIsRecording(false));
-      },
-      () => {
-        toast({ variant: 'destructive', title: t('errorRecording'), description: 'Unable to retrieve your location.' });
-        setIsRecording(false);
-      }
-    );
-  };
   
   const handleExport = () => {
     const dataStr = JSON.stringify(locations, null, 2);
@@ -191,10 +169,6 @@ export default function DashboardSidebar() {
 
             <TabsContent value="data" className="flex-1 overflow-hidden">
                 <div className="h-full p-4 space-y-4">
-                     <Button className="w-full" onClick={handleRecordLocation} disabled={isRecording}>
-                        {isRecording ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                        {t('recordLocation')}
-                    </Button>
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('importData')}</CardTitle>

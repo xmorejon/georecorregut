@@ -13,7 +13,6 @@ export const translations: Translations = {
     locationsVisited: 'Ubicacions Visitades',
     continentsVisited: 'Continents Visitats',
     countriesVisited: 'Països Visitats',
-    recordLocation: 'Enregistrar Ubicació Actual',
     importData: 'Importar Dades',
     exportData: 'Exportar Dades',
     importCSV: 'Importar CSV',
@@ -45,7 +44,7 @@ export const translations: Translations = {
     myLocations: 'Les Meves Ubicacions',
     noLocations: 'Encara no has desat cap ubicació.',
     locationAdded: 'Ubicació afegida',
-    hasBeenAdded: 's\'ha afegit a les teves ubicacions.',
+    hasBeenAdded: 's\'ha afegit a les teves ubicacions.'
   },
   es: {
     appName: 'GeoRecorrido',
@@ -57,7 +56,6 @@ export const translations: Translations = {
     locationsVisited: 'Ubicaciones Visitadas',
     continentsVisited: 'Continentes Visitados',
     countriesVisited: 'Países Visitados',
-    recordLocation: 'Registrar Ubicación Actual',
     importData: 'Importar Datos',
     exportData: 'Exportar Datos',
     importCSV: 'Importar CSV',
@@ -89,7 +87,7 @@ export const translations: Translations = {
     myLocations: 'Mis Ubicaciones',
     noLocations: 'Aún no has guardado ninguna ubicación.',
     locationAdded: 'Ubicación añadida',
-    hasBeenAdded: 'se ha añadido a tus ubicaciones.',
+    hasBeenAdded: 'se ha añadido a tus ubicaciones.'
   },
   en: {
     appName: 'GeoJourney',
@@ -101,7 +99,6 @@ export const translations: Translations = {
     locationsVisited: 'Locations Visited',
     continentsVisited: 'Continents Visited',
     countriesVisited: 'Countries Visited',
-    recordLocation: 'Record Current Location',
     importData: 'Import Data',
     exportData: 'Export Data',
     importCSV: 'Import CSV',
@@ -133,7 +130,6 @@ export const translations: Translations = {
     myLocations: 'My Locations',
     noLocations: 'You haven\'t saved any locations yet.',
     locationAdded: 'Location Added',
-    hasBeenAdded: 'has been added to your locations.',
   },
 };
 
