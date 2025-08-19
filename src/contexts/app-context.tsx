@@ -34,6 +34,7 @@ interface AppContextType {
     placeId?: string,
     callback?: () => void
   ) => void;
+  toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -89,7 +90,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         date: new Date().toISOString(),
         country: details.country || 'Unknown',
         continent: details.continent || 'Unknown',
-      };
+ isFavorite: false,
+ };
       
       const docRef = placeId 
         ? doc(db, 'users', user.uid, 'locations', placeId)
@@ -140,6 +142,23 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, toast]);
 
+  const toggleFavoriteStatus = useCallback(async (id: string, isFavorite: boolean) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to update a location.' });
+      return;
+    }
+    try {
+      const locationRef = doc(db, 'users', user.uid, 'locations', id);
+      await setDoc(locationRef, { isFavorite }, { merge: true });
+      toast({ title: 'Location Updated', description: 'The location\'s favorite status has been updated.' });
+    } catch (error) {
+      console.error("Error toggling favorite status: ", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update location favorite status.' });
+    }
+  }, [user, toast]);
+
+
+
   const previewPlace = useCallback((place: Place) => {
     setSelectedLocation({
       ...place,
@@ -188,6 +207,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     selectedLocation,
     setSelectedLocation,
     language,
+    toggleFavoriteStatus,
     setLanguage,
     t,
     user,

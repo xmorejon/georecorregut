@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAppContext } from '@/contexts/app-context';
+import { useAppContext, useAppDispatch } from '@/contexts/app-context';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader } from 'lucide-react';
+import { Plus, Loader, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Place } from '@/lib/types';
 
@@ -15,7 +15,8 @@ export function PlaceSearchResults() {
     addPlaceAsLocation,
     previewPlace,
     searchTerm,
-    locations
+    locations,
+    toggleFavoriteLocation,
   } = useAppContext();
   const { toast } = useToast();
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -58,22 +59,41 @@ export function PlaceSearchResults() {
             <p className="font-semibold">{place.name}</p>
             <p className="text-sm text-muted-foreground">{place.address}</p>
           </div>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="shrink-0 h-8 w-8"
-            disabled={addingId === place.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddLocation(place);
-            }}
-          >
-            {addingId === place.id ? (
-              <Loader className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="shrink-0 h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavoriteLocation(place.id);
+              }}
+            >
+              <Heart
+                className={`h-4 w-4 ${
+                  locations.some((loc) => loc.id === place.id && loc.isFavorite)
+                    ? 'text-red-500 fill-red-500'
+                    : 'text-gray-400'
+                }`}
+              />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="shrink-0 h-8 w-8"
+              disabled={addingId === place.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddLocation(place);
+              }}
+            >
+              {addingId === place.id ? (
+                <Loader className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       ))}
     </div>

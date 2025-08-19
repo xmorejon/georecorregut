@@ -6,6 +6,7 @@ export type Location = {
   date: string;
   country: string;
   continent: string;
+  isFavorite: boolean;
 };
 
 export type Translations = {

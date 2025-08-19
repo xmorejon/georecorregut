@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, Globe, Loader, Plus, Search, Trash2, Upload } from 'lucide-react';
+import { Download, Globe, Heart, Loader, Plus, Search, Trash2, Upload } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -36,6 +36,7 @@ export default function DashboardSidebar() {
     setSelectedLocation,
     addLocation,
     deleteLocation,
+    toggleFavoriteStatus,
     setActiveTab,
   } = useAppContext();
   const { toast } = useToast();
@@ -53,6 +54,15 @@ export default function DashboardSidebar() {
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent the click from selecting the location
     deleteLocation(id);
+  }
+
+  const handleToggleFavorite = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent the click from selecting the location
+    const locationToToggle = filteredLocations.find(location => location.id === id);
+    if (locationToToggle) { // Pass the location ID and the new favorite status
+ toggleFavoriteStatus(id, !locationToToggle.isFavorite);
+    }
+
   }
 
   // Handles the CSV file import
@@ -190,9 +200,15 @@ export default function DashboardSidebar() {
                             <p className="text-sm text-muted-foreground">{location.country}</p>
                           </div>
 
-                          <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center">
+                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleToggleFavorite(e, location.id)}>
+                              <Heart className={`h-4 w-4 ${location.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+
+                          </div>
 
                         </div>
                       ))
