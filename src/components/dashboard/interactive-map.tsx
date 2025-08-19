@@ -123,7 +123,7 @@ const mapStyles = [
 ];
 
 export default function InteractiveMap() {
-  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
+  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm, setLocations } = useAppContext();
   const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
   const favoritePinColor = {
     background: 'hsl(var(--destructive))',
@@ -188,6 +188,14 @@ export default function InteractiveMap() {
     setShowGeoJsonLayer(!!countriesGeoJSON && !!visitedCountries);
   }, [countriesGeoJSON, visitedCountries]);
 
+  const sortedLocations = useMemo(() => {
+    if (!locations) return [];
+    return [...locations].sort((a, b) => {
+      if (a.isFavorite && !b.isFavorite) return 1;
+      if (!a.isFavorite && b.isFavorite) return -1;
+      return 0;
+    });
+  }, [locations]);
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <Map
@@ -202,7 +210,7 @@ export default function InteractiveMap() {
         mapId={'d27278e9260e59e02fcdda7a'}
       >
         {activeTab !== 'statistics' &&
-          locations.map((location) => (
+          sortedLocations.map((location) => (
             <AdvancedMarker
               key={location.id}
               position={{ lat: location.lat, lng: location.lng }}
