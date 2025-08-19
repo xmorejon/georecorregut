@@ -15,15 +15,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, UserCredential, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { GoogleIcon } from '@/components/icons/google-icon';
 
 const formSchema = z.object({
+ name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Invalid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
@@ -36,6 +37,7 @@ export function SignupForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
     },
@@ -43,7 +45,11 @@ export function SignupForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      // Update the user's profile to include the display name
+      await updateProfile(userCredential.user, {
+        displayName: values.name,
+      });
       router.push('/');
     } catch (error: any) {
       toast({
@@ -57,7 +63,13 @@ export function SignupForm() {
   async function handleGoogleSignIn() {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user; // The signed-in user info.
+
+      // Get the user's name from the Google profile
+      if (user.displayName) {
+        await updateProfile(user, { displayName: user.displayName });
+      }
       router.push('/');
     } catch (error: any) {
       toast({
@@ -82,6 +94,18 @@ export function SignupForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your Name" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
@@ -93,6 +117,7 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="password"

@@ -123,7 +123,7 @@ const mapStyles = [
 ];
 
 export default function InteractiveMap() {
-  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm, setLocations } = useAppContext();
+  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
   const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
   const favoritePinColor = {
     background: 'hsl(var(--destructive))',
@@ -142,24 +142,20 @@ export default function InteractiveMap() {
     if (!countriesGeoJSON || !locations) return null;
 
     const visitedCountryNames = new Set(locations.map(location => location.country.toLowerCase()));
-    console.log('visitedCountryNames:', visitedCountryNames);
 
     return {
       type: 'FeatureCollection',
-      features: countriesGeoJSON.features.filter((feature: any) =>
-        {
+      features: countriesGeoJSON.features.filter((feature: any) => {
           return visitedCountryNames.has(feature.properties.name.toLowerCase()); // Assuming the country name property is 'name'
         }
       ),
     };
- }, [countriesGeoJSON, locations]);
+  }, [countriesGeoJSON, locations]);
 
   const countryLayerOptions = useMemo(() => {
     return {
       id: 'visited-countries',
       data: visitedCountries,
-      strokeColor: '#000',
-      strokeOpacity: 0.5,
       strokeWeight: 1,
     fillColor: '#FF7F7F', // Using the primary color for visited countries
     fillOpacity: 0.5,

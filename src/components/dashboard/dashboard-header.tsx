@@ -62,7 +62,7 @@ export default function DashboardHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>{user?.email || 'My Account'}</DropdownMenuLabel>
+            <DropdownMenuLabel>{user?.displayName && user?.email ? `${user.displayName} - ${user.email}` : user?.displayName || user?.email || 'My Account'}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />

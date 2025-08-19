@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger, } from '@/components/ui/tabs';
 import { Download, Globe, Heart, Loader, Plus, Search, Trash2, Upload } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { geocodeCityCountry } from '@/ai/flows/places-flow';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
+import { Settings } from 'lucide-react';
 import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results'; // Ensure this import is correct
 
@@ -179,9 +180,10 @@ export default function DashboardSidebar() {
         <Tabs defaultValue="search" className="flex flex-col h-full" onValueChange={setActiveTab}>
           <SidebarHeader>
             <TabsList className="grid w-full grid-cols-3">
+              {/* Restored the Settings tab */}
               <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
               <TabsTrigger value="stats"><Globe className="h-4 w-4 mr-1 inline-block" /> {t('stats')}</TabsTrigger>
-              <TabsTrigger value="data"><Download className="h-4 w-4 mr-1 inline-block" /> {t('data')}</TabsTrigger>
+              <TabsTrigger value="settings"><Settings className="h-4 w-4 mr-1 inline-block" /> {t('settings')}</TabsTrigger>
             </TabsList>
           </SidebarHeader>
 
