@@ -123,7 +123,7 @@ const mapStyles = [
 ];
 
 export default function InteractiveMap() {
-  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
+  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm, mode } = useAppContext();
   const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
   const favoritePinColor = {
     background: 'hsl(var(--destructive))',
@@ -200,12 +200,15 @@ export default function InteractiveMap() {
         gestureHandling={'greedy'}
         disableDefaultUI={true}
         onCameraChanged={(ev) => {
+
             setZoom(ev.detail.zoom);
             setMapCenter(ev.detail.center);
         }}
-        mapId={'d27278e9260e59e02fcdda7a'}
+        key={mode} // Add key prop to force re-render on mode change
+        mapId={mode === 'dark' ? 'ff6435e301bdf4a373fcc866' : 'ff6435e301bdf4a163aa1033'}
       >
         {activeTab !== 'statistics' &&
+
           sortedLocations.map((location) => (
             <AdvancedMarker
               key={location.id}

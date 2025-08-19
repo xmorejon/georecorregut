@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ import { useRouter } from 'next/navigation';
 
 export default function DashboardHeader() {
   const { isMobile } = useSidebar();
-  const { t, language, setLanguage, user } = useAppContext();
+  const { t, language, setLanguage, user, mode, setMode } = useAppContext();
   const router = useRouter();
 
   const handleLanguageChange = (lang: string) => {
@@ -42,6 +43,10 @@ export default function DashboardHeader() {
     } catch (error) {
       console.error("Logout failed", error);
     }
+  };
+
+  const handleModeChange = (mode: string) => {
+    setMode(mode);
   };
 
   return (
@@ -68,10 +73,20 @@ export default function DashboardHeader() {
               <User className="mr-2 h-4 w-4" />
               <span>{t('profile')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>{t('settings')}</span>
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>{t('settings')}</span>
+                </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup value={mode} onValueChange={handleModeChange}>
+                    <DropdownMenuRadioItem value="light">{t('light')}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="dark">{t('dark')}</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Languages className="mr-2 h-4 w-4" />

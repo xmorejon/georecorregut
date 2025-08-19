@@ -11,6 +11,8 @@ import { collection, onSnapshot, doc, deleteDoc, query, orderBy, setDoc, addDoc 
 import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
+  mode: string;
+  setMode: React.Dispatch<React.SetStateAction<string>>;
   locations: Location[];
   filteredLocations: Location[];
   addPlaceAsLocation: (place: Place, callback?: () => void) => void;
@@ -40,6 +42,11 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  const [mode, setModeState] = useState('light');
+  const setMode = (newMode: string) => {
+    console.log('Changing mode to:', newMode);
+    setModeState(newMode);
+  };
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -211,6 +218,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [locations, searchTerm]);
   
   const value = {
+    mode,
+    setMode,
     locations,
     filteredLocations,
     addLocation,
@@ -238,6 +247,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
+  console.log('useAppContext called, current mode:', context?.mode);
   if (context === undefined) {
     throw new Error('useAppContext must be used within an AppProvider');
   }

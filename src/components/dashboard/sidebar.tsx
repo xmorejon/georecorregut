@@ -183,7 +183,7 @@ export default function DashboardSidebar() {
               {/* Restored the Settings tab */}
               <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
               <TabsTrigger value="stats"><Globe className="h-4 w-4 mr-1 inline-block" /> {t('stats')}</TabsTrigger>
-              <TabsTrigger value="settings"><Settings className="h-4 w-4 mr-1 inline-block" /> {t('settings')}</TabsTrigger>
+              <TabsTrigger value="data"><Download className="h-4 w-4 mr-1 inline-block" /> {t('data')}</TabsTrigger>
             </TabsList>
           </SidebarHeader>
 
