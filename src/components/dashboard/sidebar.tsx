@@ -75,6 +75,7 @@ export default function DashboardSidebar() {
     Papa.parse(file, {
       header: true, // Assuming the first row is headers (Country, City)
       skipEmptyLines: true,
+      delimiter: ';', // Add this line to specify semicolon as delimiter
       complete: async (results: ParseResult<{ [key: string]: string }>) => {
         // Inside the complete callback
         const importedLocations: string[] = [];
@@ -87,6 +88,12 @@ export default function DashboardSidebar() {
           const { Country, City } = row;
           const country = Country?.trim() || '';
           const city = City?.trim() || '';
+
+          let isFavorite = false;
+          const favoriteValue = row.Favorite?.trim();
+          if (favoriteValue) {
+            isFavorite = ['TRUE', 'True', 'Yes', 'yes', '1'].includes(favoriteValue);
+          }
 
           // Check if both city and country are provided
           if (country && city) {
@@ -104,6 +111,7 @@ export default function DashboardSidebar() {
                   lat: geocodeResult.lat,
                   lng: geocodeResult.lng,
                   date: new Date().toISOString(), // Set date to current date to match Location type
+                  isFavorite: isFavorite,
                 };
 
                 // Add the location to Firebase

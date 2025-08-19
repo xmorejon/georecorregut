@@ -30,7 +30,7 @@ interface AppContextType {
   activeTab: string;
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   addLocation: (
-    details: { lat: number; lng: number; name: string, country: string, continent: string },
+    details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
     placeId?: string,
     callback?: () => void
   ) => void;
@@ -72,7 +72,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, toast]);
 
   const addLocation = useCallback(async (
-    details: { lat: number; lng: number; name: string, country: string, continent: string },
+    details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
     placeId?: string,
     callback?: () => void
   ) => {
@@ -90,7 +90,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         date: new Date().toISOString(),
         country: details.country || 'Unknown',
         continent: details.continent || 'Unknown',
- isFavorite: false,
+        isFavorite: details.isFavorite ?? false,
  };
       
       const docRef = placeId 
@@ -121,6 +121,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         name: place.name,
         country: place.country,
         continent: place.continent,
+ isFavorite: false, // Default to false when adding from place search
       },
       place.id,
       callback
@@ -163,6 +164,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedLocation({
       ...place,
       date: '',
+      isFavorite: false, // Default to false for preview
     });
   }, []);
 
@@ -172,7 +174,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         setIsSearchingPlaces(true);
         searchPlacesByText({ query: searchTerm })
           .then(results => {
-            setPlaceSearchResults(results);
+            // Ensure each place object has a string id and other required properties
+            const validResults: Place[] = results.map(result => ({
+              id: result.id || Date.now().toString(), // Provide a fallback ID
+              name: result.name || 'Unknown Place', // Provide a default name if missing
+              address: result.address || 'Unknown Address', // Provide a default address if missing
+              lat: result.lat || 0, // Provide a default lat if missing
+              lng: result.lng || 0, // Provide a default lng if missing
+              country: result.country || 'Unknown Country', // Provide a default country if missing
+              continent: result.continent || 'Unknown Continent', // Provide a default continent if missing
+              // isFavorite is not part of Place type, so we don't include it here
+            }));
+            setPlaceSearchResults(validResults);
           })
           .catch(error => {
             console.error("Error searching places:", error);

@@ -195,11 +195,11 @@ export default function InteractiveMap() {
               position={{ lat: location.lat, lng: location.lng }}
               onClick={() => setSelectedLocation(location)}
             >
-              <Pin
-                background={'hsl(var(--primary))'}
-                borderColor={'hsl(var(--primary-foreground))'}
-                glyphColor={'hsl(var(--primary-foreground))'}
-              />
+                <Pin
+                    background={'hsl(var(--primary))'}
+                    borderColor={'hsl(var(--primary-foreground))'}
+                    glyphColor={'hsl(var(--primary-foreground))'}
+                />
             </AdvancedMarker>
           ))}
         {showGeoJsonLayer && (
