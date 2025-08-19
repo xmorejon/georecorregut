@@ -12,6 +12,7 @@ import { Download, Globe, Loader, Plus, Search, Trash2, Upload } from 'lucide-re
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import {
+  AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
   AlertDialogDescription,
@@ -20,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { geocodeCityCountry } from '@/ai/flows/places-flow';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
 import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results'; // Ensure this import is correct
@@ -48,8 +50,13 @@ export default function DashboardSidebar() {
     return [...new Set(countries)];
   }, [locations]);
 
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent the click from selecting the location
+    deleteLocation(id);
+  }
+
   // Handles the CSV file import
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -58,55 +65,50 @@ export default function DashboardSidebar() {
     Papa.parse(file, {
       header: true, // Assuming the first row is headers (Country, City)
       skipEmptyLines: true,
-      complete: async (results: ParseResult<any>) => {
+      complete: async (results: ParseResult<{ [key: string]: string }>) => {
+        // Inside the complete callback
         const importedLocations: string[] = [];
         const failedLocations: string[] = [];
         let rowNumber = 1; // To track the row number in the CSV
 
+        // Process each row from the CSV data
         for (const row of results.data as { [key: string]: string }[]) {
           rowNumber++; // Increment row number for each data row
-          const location = row as { Country?: string; City?: string };
-          const country = location.Country?.trim() || '';
-          const city = location.City?.trim() || '';
+          const { Country, City } = row;
+          const country = Country?.trim() || '';
+          const city = City?.trim() || '';
 
+          // Check if both city and country are provided
           if (country && city) {
             try {
-              // Call the API endpoint to get geocoding data
-              const response = await fetch(`/api/geocode?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}`);
-              const data = await response.json();
+              // Call the geocodeCityCountry function from the AI flow
+              const geocodeResult = await geocodeCityCountry(city, country);
 
-              if (data && data.lat && data.lng) {
-                if (data.success) {
-                  // Construct the Location object
-                  const newLocation: Location = {
-                    id: data.location.place_id || Date.now().toString(), // Use place_id if available, otherwise a timestamp
-                    name: data.location.name,
-                    country: data.location.country,
-                    continent: data.location.continent || 'Unknown', // Default to Unknown if continent is not provided
-                    lat: data.location.lat,
-                    lng: data.location.lng,
-                    visited_at: new Date().toISOString(), // Or extract from CSV if available
-                    notes: '', // Or extract from CSV if available
-                    photo_url: '', // Or extract from CSV if available
-                  };
+              if (geocodeResult) {
+                // Construct the Location object
+                const newLocation: Location = {
+                  id: geocodeResult.id || Date.now().toString(), // Use the ID returned by geocoding or generate one
+                  name: geocodeResult.name,
+                  country: geocodeResult.country,
+                  continent: geocodeResult.continent || 'Unknown', // Default to Unknown if continent is not provided
+                  lat: geocodeResult.lat,
+                  lng: geocodeResult.lng,
+                  date: new Date().toISOString(), // Set date to current date to match Location type
+                };
 
-                  // Add the location to Firebase
-                  await addLocation(newLocation);
-                  importedLocations.push(`${data.location.name}, ${data.location.country}`);
-                } else {
-                  failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - ${data.error || 'Location not found'}`);
-                }
+                // Add the location to Firebase
+                await addLocation(newLocation);
+                importedLocations.push(`${geocodeResult.name}, ${geocodeResult.country}`);
               } else {
-                failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Location data incomplete`);
+                // Location not found
+                failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Location not found`);
               }
             } catch (error) {
+              // Handle any errors during geocoding or adding to Firebase
               failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Error processing row: ${error}`);
             }
-          } else {
-            failedLocations.push(`Invalid row: ${JSON.stringify(row)}`);
           }
         }
-
         // Log results to console
         console.log('CSV Import Results:');
         if (importedLocations.length > 0) {
@@ -122,11 +124,11 @@ export default function DashboardSidebar() {
           });
         }
       },
-      error: (err: Error) => {
+      error: (err: Error) => { // This error callback should be a separate property
         toast({ variant: 'destructive', title: 'Error parsing CSV', description: err.message });
       }
-    });
-  };
+    });;
+  };;
   
   const handleExport = () => {
     const dataStr = JSON.stringify(locations, null, 2);
@@ -141,13 +143,9 @@ export default function DashboardSidebar() {
     toast({ title: t('dataExported') });
   }
 
-  const handleDelete = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    deleteLocation(id);
-  }
 
   return (
-    <Sidebar className="hidden md:block w-80 border-r bg-background" side="left" collapsible>
+    <Sidebar className="hidden md:block w-80 border-r bg-background" side="left" collapsible="icon">
       <SidebarContent>
         <Tabs defaultValue="search" className="flex flex-col h-full" onValueChange={setActiveTab}>
           <SidebarHeader>
