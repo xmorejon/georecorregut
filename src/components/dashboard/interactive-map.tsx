@@ -123,8 +123,14 @@ const mapStyles = [
 ];
 
 export default function InteractiveMap() {
-  const { locations, selectedLocation, setSelectedLocation, activeTab } = useAppContext();
+  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
   const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
+  const favoritePinColor = {
+    background: 'hsl(var(--destructive))',
+    borderColor: 'hsl(var(--destructive-foreground))',
+    glyphColor: 'hsl(var(--destructive-foreground))',
+  };
+  const defaultPinColor = { background: 'hsl(var(--primary))', borderColor: 'hsl(var(--primary-foreground))', glyphColor: 'hsl(var(--primary-foreground))' };
   const [showGeoJsonLayer, setShowGeoJsonLayer] = useState(false);
 
   useEffect(() => {
@@ -164,6 +170,13 @@ export default function InteractiveMap() {
   const [mapCenter, setMapCenter] = useState({ lat: 41.3851, lng: 2.1734 });
   const [zoom, setZoom] = useState(3);
 
+  // Calculate pin scale based on zoom level
+  const pinScale = useMemo(() => {
+    // Adjust these values to control the scaling behavior
+    const minScale = 0.7;
+    const maxScale = 1.3;
+    return minScale + (maxScale - minScale) * ((zoom - 3) / (12 - 3)); // Assuming min zoom 3 and max zoom 12 for scaling
+  }, [zoom]);
   useEffect(() => {
     if (selectedLocation) {
       setMapCenter({ lat: selectedLocation.lat, lng: selectedLocation.lng });
@@ -193,12 +206,13 @@ export default function InteractiveMap() {
             <AdvancedMarker
               key={location.id}
               position={{ lat: location.lat, lng: location.lng }}
-              onClick={() => setSelectedLocation(location)}
+              onClick={() => {
+                setSelectedLocation(location);
+                setSearchTerm(location.name);
+              }}
             >
-                <Pin
-                    background={'hsl(var(--primary))'}
-                    borderColor={'hsl(var(--primary-foreground))'}
-                    glyphColor={'hsl(var(--primary-foreground))'}
+                <Pin {...(location.isFavorite ? favoritePinColor : defaultPinColor)}
+ scale={pinScale}
                 />
             </AdvancedMarker>
           ))}
