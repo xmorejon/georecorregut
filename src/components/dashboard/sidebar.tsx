@@ -99,6 +99,8 @@ export default function DashboardSidebar() {
           if (country && city) {
             try {
               // Call the geocodeCityCountry function from the AI flow
+              console.log(`Raw Favorite value: ${row.Favorite}\nTrimmed Favorite value: ${favoriteValue}\nisFavorite result: ${isFavorite}`); // Added logging for debugging favorite status
+              console.log(`Geocoding: ${city}, ${country}`); // Added logging for geocoding attempts
               const geocodeResult = await geocodeCityCountry(city, country);
 
               if (geocodeResult) {
@@ -112,11 +114,20 @@ export default function DashboardSidebar() {
                   lng: geocodeResult.lng,
                   date: new Date().toISOString(), // Set date to current date to match Location type
                   isFavorite: isFavorite,
-                };
+                }; 
 
-                // Add the location to Firebase
-                await addLocation(newLocation);
-                importedLocations.push(`${geocodeResult.name}, ${geocodeResult.country}`);
+                // Check for duplicates based on name and country (case-insensitive) before adding
+                const isDuplicate = locations.some(
+                  location => location.name.toLowerCase() === newLocation.name.toLowerCase() && location.country.toLowerCase() === newLocation.country.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                  failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Duplicate location, skipped`);
+                } else {
+                  // Add the location to Firebase
+                  await addLocation(newLocation);
+                  importedLocations.push(`${geocodeResult.name}, ${geocodeResult.country}`);
+                }
               } else {
                 // Location not found
                 failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Location not found`);
