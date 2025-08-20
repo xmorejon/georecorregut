@@ -6,7 +6,7 @@ import { getTranslation } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from 'firebase/auth';
 import { searchPlacesByText } from '@/ai/flows/places-flow';
-import { db } from '@/lib/firebase';
+import { db, getAllUsersUniqueLocationsData } from '@/lib/firebase';
 import { collection, onSnapshot, doc, deleteDoc, query, orderBy, setDoc, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,7 +22,7 @@ interface AppContextType {
   selectedLocation: Location | null;
   setSelectedLocation: React.Dispatch<React.SetStateAction<Location | null>>;
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (lang: Language) => void; 
   t: (key: string) => string;
   user: User | null;
   authLoading: boolean;
@@ -39,8 +39,9 @@ interface AppContextType {
   ) => void;
   handleImportJSON: (file: File) => void;
   toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
+  allUsersUniqueLocations: { [key: string]: { countries: string[], continents: string[] } };
 }
-
+//
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -58,8 +59,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('search');
+  const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { countries: string[], continents: string[] } }>({});
 
-  const t = useMemo(() => getTranslation(language), [language]);
+  const t = useMemo(() => getTranslation(language), [language]); 
 
   useEffect(() => {
     if (user) {
@@ -82,6 +84,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       setLocations([]);
  }
   }, [user, toast]);
+
+  // Effect to fetch all users' unique location data
+  useEffect(() => {
+    const fetchAllUsersData = async () => {
+      console.log('Fetching all users unique location data. Current user:', user); // Add this line
+      try {
+        const data = await getAllUsersUniqueLocationsData();
+        setAllUsersUniqueLocations(data);
+      } catch (error) {
+        console.error("Error fetching all users' unique location data:", error);
+        // Handle error, maybe show a toast
+      }
+    };
+
+    if (user) {
+      fetchAllUsersData();
+    } else {
+      setAllUsersUniqueLocations({});
+    }
+ }, [user]); // Add user to dependencies so it refetches when auth state changes
 
   const addLocation = useCallback(async (
     details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
@@ -218,7 +240,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, addLocation, toast]); // Added user to dependencies
 
   // ... rest of the code
-
+//
   const previewPlace = useCallback((place: Place) => { // Ensure this function and subsequent code are outside handleImportJSON
     setSelectedLocation({
       ...place,
@@ -290,9 +312,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     isSearchingPlaces,
     addPlaceAsLocation,
  previewPlace,
- activeTab,
+ activeTab, 
  handleImportJSON,
     setActiveTab,
+ allUsersUniqueLocations,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

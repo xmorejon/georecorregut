@@ -19,12 +19,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, UserCredential, updateProfile } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { GoogleIcon } from '@/components/icons/google-icon';
 
 const formSchema = z.object({
- name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  // Updated name schema to be optional for Google Sign-In
+  name: z.string().optional(),
   email: z.string().email({ message: 'Invalid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
@@ -37,7 +39,7 @@ export function SignupForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      name: '', // Keep default value for email/password signup
       email: '',
       password: '',
     },
@@ -49,6 +51,12 @@ export function SignupForm() {
       // Update the user's profile to include the display name
       await updateProfile(userCredential.user, {
         displayName: values.name,
+      });
+
+      // Create a document in the 'users' collection with the user's UID as the document ID
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        name: values.name,
+        email: values.email,
       });
       router.push('/');
     } catch (error: any) {
@@ -69,6 +77,12 @@ export function SignupForm() {
       // Get the user's name from the Google profile
       if (user.displayName) {
         await updateProfile(user, { displayName: user.displayName });
+
+        // Create a document in the 'users' collection with the user's UID as the document ID
+        await setDoc(doc(db, 'users', user.uid), {
+          name: user.displayName,
+          email: user.email,
+        });
       }
       router.push('/');
     } catch (error: any) {

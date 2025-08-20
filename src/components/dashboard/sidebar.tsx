@@ -40,6 +40,8 @@ export default function DashboardSidebar() {
     toggleFavoriteStatus,
     setActiveTab,
     handleImportJSON,
+    allUsersUniqueLocations, // Access the new context value
+    user, // Access the user from context
   } = useAppContext();
   const { toast } = useToast();
 
@@ -53,6 +55,43 @@ export default function DashboardSidebar() {
     return [...new Set(countries)];
   }, [locations]);
 
+  // Calculate points for all users
+  const userPoints = useMemo(() => {
+    if (!allUsersUniqueLocations) return [];
+
+    return Object.entries(allUsersUniqueLocations).map(([userId, data]) => {
+      const continentPoints = data.continents.length * 10;
+      const countryPoints = data.countries.length;
+      return {
+        userId,
+        points: continentPoints + countryPoints,
+      };
+    });
+  }, [allUsersUniqueLocations]);
+
+  // Determine rank and current user's points
+  const userRank = useMemo(() => {
+    if (!user || userPoints.length === 0) return null;
+
+    // Sort users by points in descending order
+    const sortedUsers = [...userPoints].sort((a, b) => b.points - a.points);
+
+    // Find the current user's entry
+    const currentUserEntry = sortedUsers.find(entry => entry.userId === user.uid);
+
+    if (!currentUserEntry) return null;
+
+    // Determine rank (1-based index)
+    const rank = sortedUsers.findIndex(entry => entry.userId === user.uid) + 1;
+    const totalUsers = sortedUsers.length;
+    const currentUserPoints = currentUserEntry.points;
+
+    return {
+ rank,
+      totalUsers,
+      currentUserPoints,
+    };
+  }, [user, userPoints]);
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent the click from selecting the location
     deleteLocation(id);
@@ -248,7 +287,6 @@ export default function DashboardSidebar() {
               </ScrollArea>
             </div>
           </TabsContent>
-
           <TabsContent value="stats" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full p-4">
               <div className="space-y-4">
@@ -284,6 +322,24 @@ export default function DashboardSidebar() {
                     <Progress value={(uniqueCountries.length / 195) * 100} />
                   </CardContent>
                 </Card>
+                {/* New Rank Card */}
+                {userRank && (
+                <Card>
+                    <CardHeader>
+                      <CardTitle>{t('rankTitle')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xl font-bold">
+                        {t('rankPrefix')}{userRank.rank} {t('rankSeparator')} {userRank.totalUsers} {t('rankSuffix')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('totalPointsPrefix')}
+                        {userRank.currentUserPoints}
+                        {t('totalPointsSuffix')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </ScrollArea>
           </TabsContent>

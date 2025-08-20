@@ -54,7 +54,13 @@ export const translations: Translations = {
     confirmDelAccount:"Eliminar l'usuari",
     confirmDelAccountDesc:"Aquesta acció eliminarà l'usuari definitivament. (no es pot revertir)",
     cancel:"Cancelar",
-    continue:"Continuar "
+    continue:"Continuar",
+    rankTitle: "Posició",
+    rankPrefix: "Posició ",
+    rankSeparator: " de ",
+    rankSuffix: " usuaris",
+    totalPointsPrefix: "(Punts: ",
+    totalPointsSuffix: ")"
   },
   es: {
     appName: 'GeoRecorrido',
@@ -107,7 +113,13 @@ export const translations: Translations = {
     confirmDelAccount:"Eliminar el usuario",
     confirmDelAccountDesc:"Esta acción eliminará la cuenta de usuario definitivamente. (no se puede revertir)",
     cancel:"Cancelar",
-    continue:"Continuar"
+    continue:"Continuar",
+    rankTitle: "Posición",
+    rankPrefix: "Posición ",
+    rankSeparator: " de ",
+    rankSuffix: " usuarios",
+    totalPointsPrefix: "(Puntos: ",
+    totalPointsSuffix: ")"
   },
   en: {
     appName: 'GeoJourney',
@@ -159,7 +171,13 @@ export const translations: Translations = {
     confirmDelAccount:"Delete account",
     confirmDelAccountDesc:"This action will delete user account permanently.",
     cancel:"Cancel",
-    continue:"Continue"
+    continue:"Continue",
+    rankTitle: "Rank",
+    rankPrefix: "Rank ",
+    rankSeparator: " of ",
+    rankSuffix: " Users",
+    totalPointsPrefix: "(Total points: ",
+    totalPointsSuffix: ")"
   },
 };
 
