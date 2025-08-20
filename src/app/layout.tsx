@@ -14,7 +14,6 @@ export default function RootLayout({
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { mode } = useAppContext();
-  console.log('LayoutContent mode:', mode);
   return (
     <html lang="en" suppressHydrationWarning className={mode === 'dark' ? 'dark' : ''}>
       <head>
