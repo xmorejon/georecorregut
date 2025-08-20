@@ -142,6 +142,7 @@ export default function InteractiveMap() {
     if (!countriesGeoJSON || !locations) return null;
 
     const visitedCountryNames = new Set(locations.map(location => location.country.toLowerCase()));
+    console.log('Visited Countries Set:', visitedCountryNames);
 
     return {
       type: 'FeatureCollection',
