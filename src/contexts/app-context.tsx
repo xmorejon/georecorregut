@@ -36,6 +36,7 @@ interface AppContextType {
     placeId?: string,
     callback?: () => void
   ) => void;
+  handleImportJSON: (file: File) => void;
   toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
 }
 
@@ -168,9 +169,53 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, toast]);
 
+  const handleImportJSON = useCallback(async (file: File) => {
+    // Ensure user is authenticated before proceeding with import
+    if (user) {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const json = JSON.parse(event.target?.result as string);
 
+          if (!Array.isArray(json)) {
+            toast({ variant: 'destructive', title: 'Import Error', description: 'Invalid JSON format. Expected an array.' });
+            return;
+          }
 
-  const previewPlace = useCallback((place: Place) => {
+          let importedCount = 0;
+          for (const location of json) {
+            // Basic validation for essential properties
+            if (location.name && typeof location.lat === 'number' && typeof location.lng === 'number') {
+              await addLocation({
+                name: location.name,
+                lat: location.lat,
+                lng: location.lng,
+                country: location.country || 'Unknown',
+                continent: location.continent || 'Unknown',
+                isFavorite: location.isFavorite ?? false,
+              }, location.id); // Use existing ID if available
+              importedCount++;
+            } else {
+              console.warn('Skipping invalid location data:', location);
+            }
+          }
+          toast({ title: 'Import Successful', description: `${importedCount} locations imported.` });
+        } catch (error) {
+          console.error('Error importing locations:', error);
+          toast({ variant: 'destructive', title: 'Import Error', description: 'Failed to import locations. Please check the file format.' });
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      // User is not logged in, show an error toast
+      toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to import locations.' });
+      return;
+    }
+  }, [user, addLocation, toast]); // Added user to dependencies
+
+  // ... rest of the code
+
+  const previewPlace = useCallback((place: Place) => { // Ensure this function and subsequent code are outside handleImportJSON
     setSelectedLocation({
       ...place,
       date: '',
@@ -242,6 +287,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     addPlaceAsLocation,
  previewPlace,
  activeTab,
+ handleImportJSON,
     setActiveTab,
   };
 

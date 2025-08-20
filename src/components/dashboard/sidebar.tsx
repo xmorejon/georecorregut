@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import Papa, { ParseResult } from 'papaparse';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +25,7 @@ import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar'
 import { Settings } from 'lucide-react';
 import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results'; // Ensure this import is correct
+import { ChangeEvent, useMemo, useState } from 'react';
 
 export default function DashboardSidebar() {
   const {
@@ -39,6 +39,7 @@ export default function DashboardSidebar() {
     deleteLocation,
     toggleFavoriteStatus,
     setActiveTab,
+    handleImportJSON,
   } = useAppContext();
   const { toast } = useToast();
 
@@ -65,6 +66,13 @@ export default function DashboardSidebar() {
     }
 
   }
+  
+  const handleImportJSONFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImportJSON(file);
+    }
+  };
 
   // Handles the CSV file import
   const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,6 +303,16 @@ export default function DashboardSidebar() {
                     id="csv-import-input"
                     onChange={handleImportCSV} />
                   <Button variant="outline" className="w-full" onClick={() => document.getElementById('csv-import-input')?.click()}><Upload className="mr-2 h-4 w-4" />{t('importCSV')}</Button>
+                </CardContent>
+                <CardContent className="space-y-2">
+                  <CardDescription>{t('jsonFormatInfo')}</CardDescription>
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    id="json-import-input"
+                    onChange={handleImportJSONFile} />
+                  <Button variant="outline" className="w-full" onClick={() => document.getElementById('json-import-input')?.click()}><Upload className="mr-2 h-4 w-4" />{t('importJSON')}</Button>
                 </CardContent>
               </Card>
               <Card>
