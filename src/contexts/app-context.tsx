@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   mode: string;
-  setMode: React.Dispatch<React.SetStateAction<string>>;
+  setMode: (newMode: string) => void;
   locations: Location[];
   filteredLocations: Location[];
   addPlaceAsLocation: (place: Place, callback?: () => void) => void;
@@ -67,7 +67,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         querySnapshot.forEach((doc) => {
           userLocations.push({ id: doc.id, ...doc.data() } as Location);
         });
-        setLocations(userLocations);
+        // Compare with current locations before updating state
+        if (JSON.stringify(userLocations) !== JSON.stringify(locations)) {
+ setLocations(userLocations);
+        }
       }, (error) => {
         console.error("Error fetching locations:", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
@@ -75,7 +78,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       return () => unsubscribe();
     } else {
       setLocations([]);
-    }
+ }
   }, [user, toast]);
 
   const addLocation = useCallback(async (
@@ -216,7 +219,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       location.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [locations, searchTerm]);
-  
+
   const value = {
     mode,
     setMode,

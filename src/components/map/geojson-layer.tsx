@@ -14,8 +14,7 @@ const GeoJsonLayer: React.FC<GeoJsonLayerProps> = ({ data, options }) => {
     if (!map || !data) return;
 
     if (dataLayer) {
-      // Explicitly clear existing features before adding new ones
- dataLayer.forEach(feature => dataLayer.remove(feature));
+      
       // Remove the data layer from the map before creating a new one
       dataLayer.setMap(null);
     }
@@ -31,9 +30,7 @@ const GeoJsonLayer: React.FC<GeoJsonLayerProps> = ({ data, options }) => {
     setDataLayer(layer);
 
     return () => {
-      if (dataLayer) {
-        dataLayer.setMap(null);
-      }
+      layer.setMap(null);
     };
   }, [map, data, options]);
 

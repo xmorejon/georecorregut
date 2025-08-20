@@ -224,7 +224,7 @@ export default function InteractiveMap() {
             </AdvancedMarker>
           ))}
         {showGeoJsonLayer && (
-            <GeoJsonLayer data={countryLayerOptions.data} options={countryLayerOptions} />
+            <GeoJsonLayer key={visitedCountries?.features.length} data={countryLayerOptions.data} options={countryLayerOptions} />
         )}
       </Map>
     </div>
