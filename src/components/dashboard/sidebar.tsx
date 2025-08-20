@@ -100,8 +100,7 @@ export default function DashboardSidebar() {
           if (country && city) {
             try {
               // Call the geocodeCityCountry function from the AI flow
-              console.log(`Raw Favorite value: ${row.Favorite}\nTrimmed Favorite value: ${favoriteValue}\nisFavorite result: ${isFavorite}`); // Added logging for debugging favorite status
-              console.log(`Geocoding: ${city}, ${country}`); // Added logging for geocoding attempts
+              
               const geocodeResult = await geocodeCityCountry(city, country);
 
               if (geocodeResult) {

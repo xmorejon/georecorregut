@@ -17,8 +17,7 @@ import {
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Languages, LogOut, Settings, User } from 'lucide-react';
+import { Languages, LogOut, Settings, User, Sun } from 'lucide-react';
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -60,10 +59,7 @@ export default function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.photoURL || 'https://placehold.co/100x100'} alt="User Avatar" data-ai-hint="user avatar" />
-                <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-              </Avatar>
+              <Settings className="h-9 w-9" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -75,8 +71,8 @@ export default function DashboardHeader() {
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>{t('settings')}</span>
+                <Sun className="mr-2 h-4 w-4" />
+                <span>{t('view')}</span>
                 </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
