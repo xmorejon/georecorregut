@@ -16,15 +16,17 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Languages, LogOut, Settings, User, Sun } from 'lucide-react';
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import type { Language } from '@/lib/types';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { auth, deleteUser, deleteUserDocument } from '@/lib/firebase';
+import { signOut, type User as FirebaseAuthUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { toast, useToast } from '@/hooks/use-toast';
 
 export default function DashboardHeader() {
   const { isMobile } = useSidebar();
@@ -33,6 +35,29 @@ export default function DashboardHeader() {
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang as Language);
+  };
+
+  const handleDelUser = async () => {
+    if (!user) return;
+    try {
+      await deleteUserDocument(user.uid); // Delete user document from Firestore
+      await deleteUser(user);
+      router.push('/login');
+      toast({
+        title: t('accountDeletedSuccess'),
+        variant: "default"
+      });
+    } catch (error) {
+        console.error("Deleting user failed", error);
+      toast({
+        title: t('accountDeletedError'),
+        description:
+          typeof error === 'object' && error !== null && 'message' in error
+          ? (error as any).message // Explicitly cast to any to access message
+          : 'An unknown error occurred',
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLogout = async () => {
@@ -65,10 +90,6 @@ export default function DashboardHeader() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>{user?.displayName && user?.email ? `${user.displayName} - ${user.email}` : user?.displayName || user?.email || 'My Account'}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>{t('profile')}</span>
-            </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Sun className="mr-2 h-4 w-4" />
@@ -98,6 +119,26 @@ export default function DashboardHeader() {
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
             </DropdownMenuSub>
+ <AlertDialog>
+ <AlertDialogTrigger asChild>
+ <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+ <User className="mr-2 h-4 w-4" />
+ <span>{t('delprofile')}</span>
+ </DropdownMenuItem>
+ </AlertDialogTrigger>
+ <AlertDialogContent>
+ <AlertDialogHeader>
+ <AlertDialogTitle>{t('confirmDelAccount')}</AlertDialogTitle>
+ <AlertDialogDescription>
+ {t('confirmDelAccountDesc')}
+ </AlertDialogDescription>
+ </AlertDialogHeader>
+ <AlertDialogFooter>
+ <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+ <AlertDialogAction onClick={handleDelUser}>{t('continue')}</AlertDialogAction>
+ </AlertDialogFooter>
+ </AlertDialogContent>
+ </AlertDialog>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />

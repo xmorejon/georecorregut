@@ -26,7 +26,7 @@ export const translations: Translations = {
     english: 'Anglès',
     light: 'Clar',
     dark: 'Obscur',
-    profile: 'Perfil',
+    delprofile: 'Eliminar usuari',
     settings: 'Configuració',
     view: 'Visualització',
     logout: 'Tancar sessió',
@@ -48,7 +48,13 @@ export const translations: Translations = {
     myLocations: 'Les Meves Ubicacions',
     noLocations: 'Encara no has desat cap ubicació.',
     locationAdded: 'Ubicació afegida',
-    hasBeenAdded: 's\'ha afegit a les teves ubicacions.'
+    hasBeenAdded: 's\'ha afegit a les teves ubicacions.',
+    accountDeletedSuccess: "S'ha borrat el compte d'usuari!",
+    accountDeletedError: "Error al borrar el compte d'usuari!",
+    confirmDelAccount:"Eliminar l'usuari",
+    confirmDelAccountDesc:"Aquesta acció eliminarà l'usuari definitivament. (no es pot revertir)",
+    cancel:"Cancelar",
+    continue:"Continuar "
   },
   es: {
     appName: 'GeoRecorrido',
@@ -73,7 +79,7 @@ export const translations: Translations = {
     english: 'Inglés',
     light: 'Claro',
     dark: 'Oscuro',
-    profile: 'Perfil',
+    delprofile: 'Eliminar usuario',
     settings: 'Configuración',
     view: 'Visualización',
     logout: 'Cerrar sesión',
@@ -95,7 +101,13 @@ export const translations: Translations = {
     myLocations: 'Mis Ubicaciones',
     noLocations: 'Aún no has guardado ninguna ubicación.',
     locationAdded: 'Ubicación añadida',
-    hasBeenAdded: 'se ha añadido a tus ubicaciones.'
+    hasBeenAdded: 'se ha añadido a tus ubicaciones.',
+    accountDeletedSuccess: "Se ha borrado la cuenta de usuario!",
+    accountDeletedError: "Error al borrar la cuenta de usuario!",
+    confirmDelAccount:"Eliminar el usuario",
+    confirmDelAccountDesc:"Esta acción eliminará la cuenta de usuario definitivamente. (no se puede revertir)",
+    cancel:"Cancelar",
+    continue:"Continuar"
   },
   en: {
     appName: 'GeoJourney',
@@ -120,7 +132,7 @@ export const translations: Translations = {
     english: 'English',
     light: 'Light',
     dark: 'Dark',
-    profile: 'Profile',
+    delprofile: 'Delete user',
     settings: 'Settings',
     view: 'View',
     logout: 'Log out',
@@ -142,6 +154,12 @@ export const translations: Translations = {
     myLocations: 'My Locations',
     noLocations: 'You haven\'t saved any locations yet.',
     locationAdded: 'Location Added',
+    accountDeletedSuccess: "User account has been deleted!",
+    accountDeletedError: "Error while deleting user account!",
+    confirmDelAccount:"Delete account",
+    confirmDelAccountDesc:"This action will delete user account permanently.",
+    cancel:"Cancel",
+    continue:"Continue"
   },
 };
 
