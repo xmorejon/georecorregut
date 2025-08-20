@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useAppContext, useAppDispatch } from '@/contexts/app-context';
+import { useState, useCallback } from 'react';
+import { useAppContext } from '@/contexts/app-context';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader, Heart } from 'lucide-react';
+import { Plus, Loader, Heart, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Place } from '@/lib/types';
 
@@ -16,7 +16,7 @@ export function PlaceSearchResults() {
     previewPlace,
     searchTerm,
     locations,
-    toggleFavoriteLocation,
+ toggleFavoriteStatus,
   } = useAppContext();
   const { toast } = useToast();
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export function PlaceSearchResults() {
       {placeSearchResults.map((place) => (
         <div
           key={place.id}
-          className="cursor-pointer rounded-lg border p-3 hover:bg-accent/50 transition-colors flex justify-between items-center"
+          className="cursor-pointer rounded-lg border p-2 hover:bg-accent/50 transition-colors flex justify-between items-center"
           onMouseEnter={() => previewPlace(place)}
         >
           <div>
@@ -66,7 +66,11 @@ export function PlaceSearchResults() {
               className="shrink-0 h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleFavoriteLocation(place.id);
+                // Find the corresponding location in the `locations` array to get its current favorite status
+                const locationToToggle = locations.find(loc => loc.id === place.id);
+                if (locationToToggle) {
+ toggleFavoriteStatus(place.id, !locationToToggle.isFavorite);
+                }
               }}
             >
               <Heart

@@ -214,7 +214,7 @@ export default function DashboardSidebar() {
                         <div
                           key={location.id}
                           onClick={() => setSelectedLocation(location)}
-                          className="cursor-pointer rounded-lg border p-3 hover:bg-accent transition-colors flex justify-between items-center group"
+                          className="cursor-pointer rounded-lg border p-2 hover:bg-accent transition-colors flex justify-between items-center group"
                         >
                           <div>
                             <p className="font-semibold">{location.name}</p>
