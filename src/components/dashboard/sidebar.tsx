@@ -133,7 +133,7 @@ export default function DashboardSidebar() {
                   failedLocations.push(`Row ${rowNumber}: ${city}, ${country} - Duplicate location, skipped`);
                 } else {
                   // Add the location to Firebase
-                  await addLocation(newLocation);
+                  await addLocation(newLocation, undefined, undefined, false);
                   importedLocations.push(`${geocodeResult.name}, ${geocodeResult.country}`);
                 }
               } else {

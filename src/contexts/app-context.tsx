@@ -34,7 +34,8 @@ interface AppContextType {
   addLocation: (
     details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
     placeId?: string,
-    callback?: () => void
+    callback?: () => void,
+    showToast?: boolean
   ) => void;
   handleImportJSON: (file: File) => void;
   toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
@@ -85,7 +86,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const addLocation = useCallback(async (
     details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
     placeId?: string,
-    callback?: () => void
+    callback?: () => void,
+    showToast: boolean = true
   ) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add a location.' });
@@ -109,11 +111,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         : doc(collection(db, 'users', user.uid, 'locations'));
       
       await setDoc(docRef, locationData);
-  
-      toast({
-        title: t('locationAdded'),
-        description: `${details.name} ${t('hasBeenAdded')}`,
-      });
+ 
+      if (showToast) {
+        toast({
+          title: t('locationAdded'),
+          description: `${details.name} ${t('hasBeenAdded')}`,
+        });
+      }
   
     } catch (error) {
       console.error("Error adding location:", error);
@@ -193,7 +197,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 country: location.country || 'Unknown',
                 continent: location.continent || 'Unknown',
                 isFavorite: location.isFavorite ?? false,
-              }, location.id); // Use existing ID if available
+              }, location.id, undefined, false); // Use existing ID if available
               importedCount++;
             } else {
               console.warn('Skipping invalid location data:', location);
