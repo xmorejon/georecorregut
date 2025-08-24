@@ -230,8 +230,7 @@ export default function InteractiveMap() {
             setZoom(ev.detail.zoom);
             setMapCenter(ev.detail.center);
         }}
-        key={mode} // Add key prop to force re-render on mode change
-        mapId={mode === 'dark' ? 'ff6435e301bdf4a373fcc866' : 'ff6435e301bdf4a163aa1033'}
+        mapId={'d27278e9260e59e02fcdda7a'}
         minZoom={1} // Add this prop to set the minimum zoom level
       >
         {activeTab !== 'statistics' &&
