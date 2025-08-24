@@ -1,3 +1,4 @@
+'use client';
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
@@ -12,7 +13,6 @@ export default function RootLayout({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  'use client';
   const { mode } = useAppContext();
   return (
     <html lang="en" suppressHydrationWarning className={mode === 'dark' ? 'dark' : ''}>
