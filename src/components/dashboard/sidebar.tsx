@@ -290,16 +290,16 @@ export default function DashboardSidebar() {
           <TabsContent value="stats" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full p-4">
               <div className="space-y-4">
-                <Card>
-                  <CardHeader>
+                <Card className="py-0">
+                  <CardHeader className="py-1">
                     <CardTitle>{t('locationsVisited')}</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="py-1">
                     <p className="text-3xl font-bold">{locations.length}</p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
+                <Card className="py-0">
+                  <CardHeader className="py-1">
                     <CardTitle>{t('continentsVisited')}</CardTitle>
                     <CardDescription>
                       {((uniqueContinents.length / 7) * 100).toFixed(0)}% of the world
@@ -310,8 +310,8 @@ export default function DashboardSidebar() {
                     <Progress value={(uniqueContinents.length / 7) * 100} />
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
+                <Card className="py-0 flex-1">
+                  <CardHeader className="py-1">
                     <CardTitle>{t('countriesVisited')}</CardTitle>
                     <CardDescription>
                       {((uniqueCountries.length / 195) * 100).toFixed(1)}% of the world
@@ -322,10 +322,19 @@ export default function DashboardSidebar() {
                     <Progress value={(uniqueCountries.length / 195) * 100} />
                   </CardContent>
                 </Card>
-                {/* New Rank Card */}
+                <Card className="py-0">
+                  <CardHeader className="py-2">
+                    <CardTitle>{t('countriesVisited')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" onClick={handleExport}>
+                      <Download className="mr-2 h-4 w-4" /> {t('exportAsJSON')}
+                    </Button>
+                    </CardContent>
+                </Card>  
                 {userRank && (
-                <Card>
-                    <CardHeader>
+                  <Card className="py-0">
+                    <CardHeader className="py-2">
                       <CardTitle>{t('rankTitle')}</CardTitle>
                     </CardHeader>
                     <CardContent>

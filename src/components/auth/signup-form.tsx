@@ -74,15 +74,15 @@ export function SignupForm() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user; // The signed-in user info.
 
-      // Get the user's name from the Google profile
+      // Update the user's profile to include the display name from Google if available
       if (user.displayName) {
         await updateProfile(user, { displayName: user.displayName });
+      }
 
-        // Create a document in the 'users' collection with the user's UID as the document ID
-        await setDoc(doc(db, 'users', user.uid), {
-          name: user.displayName,
-          email: user.email,
-        });
+      // Create or update a document in the 'users' collection with the user's UID as the document ID
+      await setDoc(doc(db, 'users', user.uid), {
+        name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
+        email: user.email,
       }
       router.push('/');
     } catch (error: any) {
