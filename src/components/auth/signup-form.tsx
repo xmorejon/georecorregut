@@ -69,27 +69,40 @@ export function SignupForm() {
   }
 
   async function handleGoogleSignIn() {
+    console.log('handleGoogleSignIn called');
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user; // The signed-in user info.
+      await signInWithPopup(auth, provider)
+        .then(async (result) => {
+          const user = result.user; // The signed-in user info.
 
-      // Update the user's profile to include the display name from Google if available
-      if (user.displayName) {
-        await updateProfile(user, { displayName: user.displayName });
-      }
+          console.log('After signInWithPopup. User:', user);
 
-      // Create or update a document in the 'users' collection with the user's UID as the document ID
-      await setDoc(doc(db, 'users', user.uid), {
-        name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
-        email: user.email,
-      }
-      router.push('/');
+          try {
+            // Update the user's profile to include the display name from Google if available and not already set
+            if (user.displayName) {
+              await updateProfile(user, { displayName: user.displayName });
+            }
+
+            console.log('After updateProfile.');
+
+            // Create or update a document in the 'users' collection with the user's UID as the document ID
+            await setDoc(doc(db, 'users', user.uid), {
+              name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
+              email: user.email || '', // Use email from Google, or empty string if null/undefined
+            });
+
+            console.log('After setDoc.');
+            router.push('/');
+          } catch (firestoreError: any) {
+            console.error('Error saving user data to Firestore:', firestoreError);
+          }
+        });
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Google Sign-In Failed',
-        description: error.message,
+        description: error.message, // This will catch errors during signInWithPopup
       });
     }
   }
