@@ -32,6 +32,7 @@ const formSchema = z.object({
 });
 
 export function SignupForm() {
+  console.log('SignupForm component rendered');
   const router = useRouter();
   const { t } = useAppContext();
   const { toast } = useToast();
