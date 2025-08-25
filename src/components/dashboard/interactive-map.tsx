@@ -230,7 +230,7 @@ export default function InteractiveMap() {
             setZoom(ev.detail.zoom);
             setMapCenter(ev.detail.center);
         }}
-        mapId={'d27278e9260e59e02fcdda7a'}
+        mapId={'YOUR_NEW_MAP_ID_HERE'}
         minZoom={1} // Add this prop to set the minimum zoom level
       >
         {activeTab !== 'statistics' &&
