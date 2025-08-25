@@ -4,12 +4,14 @@ import DashboardHeader from '@/components/dashboard/dashboard-header';
 import DashboardSidebar from '@/components/dashboard/sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppProvider } from '@/contexts/app-context';
+import { ThemeProvider } from 'next-themes';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider> {}
-      <SidebarProvider>
-          <div className="flex h-screen w-full flex-col">
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <SidebarProvider>
+          <div className="flex h-screen w-full flex-col"> {/* Remove closing comment here */}
             <DashboardHeader />
             <div className="flex flex-1 overflow-hidden">
               <DashboardSidebar />
@@ -18,7 +20,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </main>
             </div>
           </div>
-      </SidebarProvider>
-    </AppProvider> // Close AppProvider
+        </SidebarProvider>
+      </ThemeProvider>
+    </AppProvider>
   );
 }

@@ -4,10 +4,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 import GeoJsonLayer from '../map/geojson-layer';
+import { useTheme } from 'next-themes';
 import { useAppContext } from '@/contexts/app-context';
 
 export default function InteractiveMap() {
-  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm, mode } = useAppContext();
+  const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
   const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
   const favoritePinColor = {
     background: 'hsl(var(--destructive))',
@@ -77,8 +78,12 @@ export default function InteractiveMap() {
       return 0;
     });
   }, [locations]);
+
+  const { theme } = useTheme();
+  const mapColorScheme = theme === 'dark' ? 'dark' : 'light';
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+      <div>Current Theme: {theme}</div>
       <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1 }}>
         <div className="flex flex-col space-y-1">
           <Button size="sm" className="h-8 w-8" onClick={() => setZoom(zoom + 1)}>
@@ -98,12 +103,13 @@ export default function InteractiveMap() {
           </Button>
           <Button size="sm" className="h-8 w-8" onClick={() => navigator.geolocation.getCurrentPosition((position) => { setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude }); setZoom(12); })}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
- <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18v-6h.01M12 6a9 9 0 110 18 9 9 0 010-18zm0 6a3 3 0 110 6 3 3 0 010-6z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18v-6h.01M12 6a9 9 0 110 18 9 9 0 010-18zm0 6a3 3 0 110 6 3 3 0 010-6z" />
             </svg>
           </Button>
         </div>
       </div>
       <Map
+        key={theme} // Add the theme as the key
         center={mapCenter}
         zoom={zoom}
         gestureHandling={'greedy'}
@@ -114,6 +120,7 @@ export default function InteractiveMap() {
             setMapCenter(ev.detail.center);
         }}
         mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
+ colorScheme={mapColorScheme as google.maps.ColorScheme}
         minZoom={1}
       >
         {activeTab !== 'statistics' &&
