@@ -15,7 +15,7 @@ export default function RootLayout({
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { mode } = useAppContext();
   return (
-    <html lang="en" suppressHydrationWarning className={mode === 'dark' ? 'dark' : ''}>
+    <html lang="en" suppressHydrationWarning>
       <head>
  <link rel="icon" href="/icons/travel_favicon_16px.ico" sizes="16x16" type="image/x-icon" />
  <link rel="icon" href="/icons/travel_favicon_24px.ico" sizes="24x24" type="image/x-icon" />

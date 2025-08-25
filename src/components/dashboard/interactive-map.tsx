@@ -48,7 +48,6 @@ export default function InteractiveMap() {
     };
   }, [visitedCountries]);
 
-
   const [mapCenter, setMapCenter] = useState({ lat: 41.3851, lng: 2.1734 });
   const [zoom, setZoom] = useState(3);
 
@@ -59,6 +58,7 @@ export default function InteractiveMap() {
     const maxScale = 1.3;
     return minScale + (maxScale - minScale) * ((zoom - 3) / (12 - 3)); // Assuming min zoom 3 and max zoom 12 for scaling
   }, [zoom]);
+
   useEffect(() => {
     if (selectedLocation) {
       setMapCenter({ lat: selectedLocation.lat, lng: selectedLocation.lng });
@@ -80,10 +80,10 @@ export default function InteractiveMap() {
   }, [locations]);
 
   const { theme } = useTheme();
+  useEffect(() => { console.log('InteractiveMap - theme changed:', theme); }, [theme]);
   const mapColorScheme = theme === 'dark' ? 'dark' : 'light';
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <div>Current Theme: {theme}</div>
       <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1 }}>
         <div className="flex flex-col space-y-1">
           <Button size="sm" className="h-8 w-8" onClick={() => setZoom(zoom + 1)}>

@@ -22,6 +22,7 @@ import { Languages, LogOut, Settings, User, Sun } from 'lucide-react';
 import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { useTheme } from 'next-themes';
 import type { Language } from '@/lib/types';
 import { auth, deleteUser, deleteUserDocument } from '@/lib/firebase';
 import { signOut, type User as FirebaseAuthUser } from 'firebase/auth';
@@ -29,7 +30,8 @@ import { useRouter } from 'next/navigation';
 import { toast, useToast } from '@/hooks/use-toast';
 
 export default function DashboardHeader() {
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar(); // Assuming useSidebar provides isMobile
+  const { theme, setTheme } = useTheme(); // Get theme and setTheme from next-themes
   const { t, language, setLanguage, user, mode, setMode } = useAppContext();
   const router = useRouter();
 
@@ -70,7 +72,7 @@ export default function DashboardHeader() {
   };
 
   const handleModeChange = (mode: string) => {
-    setMode(mode);
+    setTheme(mode); // Use setTheme from next-themes
   };
 
   return (
