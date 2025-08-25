@@ -230,7 +230,7 @@ export default function InteractiveMap() {
             setZoom(ev.detail.zoom);
             setMapCenter(ev.detail.center);
         }}
-        mapId={'YOUR_NEW_MAP_ID_HERE'}
+        mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
         minZoom={1} // Add this prop to set the minimum zoom level
       >
         {activeTab !== 'statistics' &&
