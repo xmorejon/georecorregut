@@ -40,8 +40,8 @@ export default function DashboardSidebar() {
     toggleFavoriteStatus,
     setActiveTab,
     handleImportJSON,
-    allUsersUniqueLocations, // Access the new context value
-    user, // Access the user from context
+    allUsersUniqueLocations,
+    user,
   } = useAppContext();
   const { toast } = useToast();
 
@@ -57,6 +57,7 @@ export default function DashboardSidebar() {
 
   // Calculate points for all users
   const userPoints = useMemo(() => {
+
     if (!allUsersUniqueLocations) return [];
 
     return Object.entries(allUsersUniqueLocations).map(([userId, data]) => {
@@ -64,7 +65,7 @@ export default function DashboardSidebar() {
       const countryPoints = data.countries.length;
       return {
         userId,
-        points: continentPoints + countryPoints,
+        points: continentPoints + countryPoints, // Ensure points are calculated correctly here
       };
     });
   }, [allUsersUniqueLocations]);
@@ -87,7 +88,7 @@ export default function DashboardSidebar() {
     const currentUserPoints = currentUserEntry.points;
 
     return {
- rank,
+      rank,
       totalUsers,
       currentUserPoints,
     };
@@ -101,7 +102,7 @@ export default function DashboardSidebar() {
     e.stopPropagation(); // Prevent the click from selecting the location
     const locationToToggle = filteredLocations.find(location => location.id === id);
     if (locationToToggle) { // Pass the location ID and the new favorite status
- toggleFavoriteStatus(id, !locationToToggle.isFavorite);
+      toggleFavoriteStatus(id, !locationToToggle.isFavorite);
     }
 
   }
@@ -186,7 +187,6 @@ export default function DashboardSidebar() {
           }
         }
         // Log results to console
-        console.log('CSV Import Results:');
         if (importedLocations.length > 0) {
           console.log('Successfully Imported:', importedLocations);
           toast({ title: `${importedLocations.length} locations imported successfully!` });

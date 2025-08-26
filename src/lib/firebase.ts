@@ -45,11 +45,11 @@ const getAllUsersUniqueLocationsData = async () => {
   const usersRef = collection(db, 'users');
   const usersSnapshot = await getDocs(usersRef);
   const allUsersUniqueData: { [key: string]: { countries: string[], continents: string[] } } = {};
-  const uniqueCountries = new Set<string>();
- const uniqueContinents = new Set<string>();
 
   for (const userDoc of usersSnapshot.docs) {
     const userId = userDoc.id;
+    const uniqueCountries = new Set<string>();
+    const uniqueContinents = new Set<string>();
     const locationsRef = collection(db, 'users', userId, 'locations');
     const locationsSnapshot = await getDocs(locationsRef);
 
