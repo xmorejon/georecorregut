@@ -24,7 +24,8 @@ import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { useTheme } from 'next-themes';
 import type { Language } from '@/lib/types';
-import { auth, deleteUser, deleteUserDocument } from '@/lib/firebase';
+import { auth, deleteUser, deleteUserDocument, db, doc, setDoc } from '@/lib/firebase';
+
 import { signOut, type User as FirebaseAuthUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast, useToast } from '@/hooks/use-toast';
@@ -32,7 +33,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 export default function DashboardHeader() {
   const { isMobile } = useSidebar(); // Assuming useSidebar provides isMobile
   const { theme, setTheme } = useTheme(); // Get theme and setTheme from next-themes
-  const { t, language, setLanguage, user, mode, setMode } = useAppContext();
+  const { t, language, setLanguage, user } = useAppContext();
   const router = useRouter();
 
   const handleLanguageChange = (lang: string) => {
@@ -71,8 +72,18 @@ export default function DashboardHeader() {
     }
   };
 
-  const handleModeChange = (mode: string) => {
-    setTheme(mode); // Use setTheme from next-themes
+  const handleThemeChange = async (theme: string) => { // Make async
+    setTheme(theme); // Use setTheme from next-themes
+
+    // Save theme preference to Firebase
+    if (user && user.uid) { // Ensure user and uid exist
+      const userDocRef = doc(db, 'users', user.uid); // Get reference to user document // Error here - 'doc' not found
+      try {
+        await setDoc(userDocRef, { themePreference: theme }, { merge: true }); // Save themePreference field
+      } catch (error) {
+        console.error("Error saving theme preference to Firebase:", error);
+      }
+    }
   };
 
   return (
@@ -99,7 +110,8 @@ export default function DashboardHeader() {
                 </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  <DropdownMenuRadioGroup value={mode} onValueChange={handleModeChange}>
+                  <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+                    <DropdownMenuRadioItem value="system">{t('system')}</DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="light">{t('light')}</DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="dark">{t('dark')}</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>

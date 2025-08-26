@@ -26,3 +26,8 @@ export interface Place {
   country: string;
   continent: string;
 }
+
+// Add UserData type
+export type UserData = {
+  themePreference?: 'light' | 'dark' | 'system'; // Make it optional as it might not exist for all users
+};

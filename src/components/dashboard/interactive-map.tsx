@@ -119,8 +119,8 @@ export default function InteractiveMap() {
             setZoom(ev.detail.zoom);
             setMapCenter(ev.detail.center);
         }}
-        mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
- colorScheme={mapColorScheme as google.maps.ColorScheme}
+        mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID as string} // Ensure mapId is string
+        colorScheme={mapColorScheme as google.maps.ColorScheme}
         minZoom={1}
       >
         {activeTab !== 'statistics' &&

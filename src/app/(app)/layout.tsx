@@ -7,11 +7,12 @@ import { AppProvider } from '@/contexts/app-context';
 import { ThemeProvider } from 'next-themes';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+
   return (
-    <AppProvider> {}
+    <AppProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <SidebarProvider>
-          <div className="flex h-screen w-full flex-col"> {/* Remove closing comment here */}
+          <div className="flex h-screen w-full flex-col">
             <DashboardHeader />
             <div className="flex flex-1 overflow-hidden">
               <DashboardSidebar />

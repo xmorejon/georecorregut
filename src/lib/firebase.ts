@@ -1,7 +1,8 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth, deleteUser as firebaseDeleteUser, User } from 'firebase/auth';
 import { getFirestore,setLogLevel, Firestore } from 'firebase/firestore';
-import { doc, deleteDoc, collection, getDocs, query } from 'firebase/firestore';
+import { doc, deleteDoc, collection, getDocs, query, setDoc } from 'firebase/firestore';
+
 
 const firebaseConfig = {
   projectId: 'georecorregut',
@@ -70,4 +71,4 @@ const getAllUsersUniqueLocationsData = async () => {
   }
   return allUsersUniqueData;
 };
-export { app, auth, db, deleteUser, deleteUserDocument, getAllUsersUniqueLocationsData };
+export { app, auth, db, deleteUser, deleteUserDocument, getAllUsersUniqueLocationsData, doc, setDoc };

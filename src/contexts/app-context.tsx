@@ -1,18 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
-import type { Location, Language, Place } from '@/lib/types';
-import { getTranslation } from '@/lib/data';
+import type { Location, Language, Place, UserData} from '@/lib/types';
+import { getTranslation } from '@/lib/data'; // Assuming getTranslation is imported from '@/lib/data'
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from 'firebase/auth';
 import { searchPlacesByText } from '@/ai/flows/places-flow';
-import { db, getAllUsersUniqueLocationsData } from '@/lib/firebase';
-import { collection, onSnapshot, doc, deleteDoc, query, orderBy, setDoc, addDoc } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
+import { auth, db, getAllUsersUniqueLocationsData } from '@/lib/firebase';
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy, setDoc, addDoc, getDoc } from 'firebase/firestore';
+import { toast, useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
-  mode: string;
-  setMode: (newMode: string) => void;
   locations: Location[];
   filteredLocations: Location[];
   addPlaceAsLocation: (place: Place, callback?: () => void) => void;
@@ -40,17 +38,11 @@ interface AppContextType {
   handleImportJSON: (file: File) => void;
   toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
   allUsersUniqueLocations: { [key: string]: { countries: string[], continents: string[] } };
+  userThemePreference: UserData['themePreference'];
 }
 //
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [mode, setModeState] = useState('light');
-  const setMode = (newMode: string) => {
-    console.log('Changing mode to:', newMode);
-    setModeState(newMode);
-  };
-  const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [language, setLanguage] = useState<Language>('ca');
@@ -60,30 +52,60 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('search');
   const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { countries: string[], continents: string[] } }>({});
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [userThemePreference, setUserThemePreference] = useState<UserData['themePreference']>('system'); // State for user theme preference
 
   const t = useMemo(() => getTranslation(language), [language]); 
 
   useEffect(() => {
-    if (user) {
+    // This effect should react to changes in the 'user' state provided by useAuth()
+    if (user) { // Check if user is authenticated
+      // Use an async IIFE (Immediately Invoked Function Expression) for async operations inside the effect
+      (async () => {
+        // --- Fetch user document and theme preference ONCE after user is set ---
+        const userDocRef = doc(db, 'users', user.uid);
+        try {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            const userData = docSnap.data() as UserData; // Use UserData type
+            setUserThemePreference(userData.themePreference || 'system'); // Default to system if not set
+          } else {
+            // Handle case where user document doesn't exist (e.g., new user)
+            setUserThemePreference('system'); // Default theme
+          }
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setUserThemePreference('system'); // Default theme on error
+        }
+        // --- End of theme preference fetching ---
+      })(); // Call the async function immediately
+
+
+      // --- Existing locations fetching logic ---
       const q = query(collection(db, 'users', user.uid, 'locations'), orderBy('date', 'desc'));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const unsubscribeLocations = onSnapshot(q, (querySnapshot) => {
         const userLocations: Location[] = [];
         querySnapshot.forEach((doc) => {
           userLocations.push({ id: doc.id, ...doc.data() } as Location);
         });
         // Compare with current locations before updating state
         if (JSON.stringify(userLocations) !== JSON.stringify(locations)) {
- setLocations(userLocations);
+          setLocations(userLocations);
         }
       }, (error) => {
-        console.error("Error fetching locations:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
-      });
-      return () => unsubscribe();
-    } else {
-      setLocations([]);
- }
-  }, [user, toast]);
+          console.error("Error fetching locations:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
+        });
+        return () => unsubscribeLocations(); // Cleanup locations listener
+
+      } else {
+        // Handle user logged out state
+        setLocations([]); // Clear locations
+        setUserThemePreference(undefined); // Clear theme preference
+        // Redirect to login if needed
+      }
+  }, [user, db, toast]); // Removed 'locations' from dependencies to prevent infinite loop
+
 
   // Effect to fetch all users' unique location data
   useEffect(() => {
@@ -103,7 +125,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setAllUsersUniqueLocations({});
     }
- }, [user]); // Add user to dependencies so it refetches when auth state changes
+ }, [user as User | null]); // Add user to dependencies so it refetches when auth state changes
 
   const addLocation = useCallback(async (
     details: { lat: number; lng: number; name: string, country: string, continent: string, isFavorite?: boolean },
@@ -244,7 +266,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const previewPlace = useCallback((place: Place) => { // Ensure this function and subsequent code are outside handleImportJSON
     setSelectedLocation({
       ...place,
-      date: '',
+      date: new Date().toISOString(), // Add a default date
       isFavorite: false, // Default to false for preview
     });
   }, []);
@@ -291,9 +313,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }, [locations, searchTerm]);
 
-  const value = {
-    mode,
-    setMode,
+  const value: AppContextType = {
     locations,
     filteredLocations,
     addLocation,
@@ -316,6 +336,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
  handleImportJSON,
     setActiveTab,
  allUsersUniqueLocations,
+    userThemePreference, // Provide userThemePreference in context
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
