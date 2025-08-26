@@ -9,11 +9,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
  return <Providers><LayoutContent>{children}</LayoutContent></Providers>;
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { mode } = useAppContext();
+  console.log('Rendering LayoutContent');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

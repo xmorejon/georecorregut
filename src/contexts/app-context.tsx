@@ -104,13 +104,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         setUserThemePreference(undefined); // Clear theme preference
         // Redirect to login if needed
       }
-  }, [user, db, toast]); // Removed 'locations' from dependencies to prevent infinite loop
+  }, [user, db, toast]);
 
 
   // Effect to fetch all users' unique location data
   useEffect(() => {
     const fetchAllUsersData = async () => {
-      console.log('Fetching all users unique location data. Current user:', user); // Add this line
       try {
         const data = await getAllUsersUniqueLocationsData();
         setAllUsersUniqueLocations(data);
