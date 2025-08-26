@@ -58,6 +58,7 @@ export function SignupForm() {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name: values.name,
         email: values.email,
+ themePreference: 'system', // Set default theme preference on creation
       });
       router.push('/');
     } catch (error: any) {
@@ -91,6 +92,7 @@ export function SignupForm() {
             await setDoc(doc(db, 'users', user.uid), {
               name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
               email: user.email || '', // Use email from Google, or empty string if null/undefined
+ themePreference: 'system', // Set default theme preference on creation
             });
 
             console.log('After setDoc.');
