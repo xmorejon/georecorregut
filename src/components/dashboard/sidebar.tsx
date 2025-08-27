@@ -7,25 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger, } from '@/components/ui/tabs';
-import { Download, Globe, Heart, Loader, Plus, Search, Trash2, Upload } from 'lucide-react';
+import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { geocodeCityCountry } from '@/ai/flows/places-flow';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
-import { Settings } from 'lucide-react';
 import { Location } from '@/lib/types';
-import { PlaceSearchResults } from './place-search-results'; // Ensure this import is correct
-import { ChangeEvent, useMemo, useState } from 'react';
+import { PlaceSearchResults } from './place-search-results';
+import { ChangeEvent, useMemo } from 'react';
 
 export default function DashboardSidebar() {
   const {
@@ -320,18 +309,12 @@ export default function DashboardSidebar() {
                   <CardContent>
                     <p className="text-2xl font-bold mb-2">{uniqueCountries.length} / 195</p>
                     <Progress value={(uniqueCountries.length / 195) * 100} />
+                    <br></br>
+                    <Button variant="outline" className="w-full" onClick={handleExport}>
+                      <BookmarkCheck className="mr-2 h-4 w-4" /> {t('detail')} {/* This seems to be an export button, keeping Download icon */}
+                    </Button>
                   </CardContent>
                 </Card>
-                <Card className="py-0">
-                  <CardHeader className="py-2">
-                    <CardTitle>{t('countriesVisited')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full" onClick={handleExport}>
-                      <Download className="mr-2 h-4 w-4" /> {t('exportAsJSON')}
-                    </Button>
-                    </CardContent>
-                </Card>  
                 {userRank && (
                   <Card className="py-0">
                     <CardHeader className="py-2">
