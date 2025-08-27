@@ -62,7 +62,9 @@ export const translations: Translations = {
     rankSuffix: " usuaris",
     totalPointsPrefix: "(Punts: ",
     totalPointsSuffix: ")",
-    detail: "Detall"
+    detail: "Detall",
+    close: "Tancar",
+    noVisitedCountries: "0 països visitats!"
   },
   es: {
     appName: 'GeoRecorrido',
@@ -123,7 +125,9 @@ export const translations: Translations = {
     rankSuffix: " usuarios",
     totalPointsPrefix: "(Puntos: ",
     totalPointsSuffix: ")",
-    detail: "Detalle"
+    detail: "Detalle",
+    close: "Cerrar",
+    noVisitedCountries: "0 paises visitados!"
   },
   en: {
     appName: 'GeoJourney',
@@ -183,7 +187,9 @@ export const translations: Translations = {
     rankSuffix: " Users",
     totalPointsPrefix: "(Total points: ",
     totalPointsSuffix: ")",
-    detail: "Detalle"
+    detail: "Detail",
+    close: "Close",
+    noVisitedCountries: "no coutries visited!"
   },
 };
 

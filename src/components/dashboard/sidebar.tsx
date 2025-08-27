@@ -85,17 +85,23 @@ export default function DashboardSidebar() {
     });
   }, [locations]);
 
-  // Extract unique countries from sorted locations, maintaining order
-  const extractSortedUniqueVisitedCountries = useMemo(() => {
-    if (!sortedLocationsByContinentAndCountry) return [];
-    const uniqueCountries = new Set<string>();
-    return sortedLocationsByContinentAndCountry.reduce((acc: string[], location) => {
-      if (location.country && location.continent && !uniqueCountries.has(location.country)) {
-        uniqueCountries.add(location.country);
-        acc.push(`${location.continent}: ${location.country}`);
+  // Group countries by continent from sorted locations
+  const groupedVisitedCountries = useMemo(() => {
+    if (!sortedLocationsByContinentAndCountry) return {};
+
+    const grouped: { [continent: string]: string[] } = {};
+    const uniqueCountriesForGrouping = new Set<string>();
+
+    sortedLocationsByContinentAndCountry.forEach(location => {
+      if (location.country && location.continent && !uniqueCountriesForGrouping.has(location.country)) {
+        uniqueCountriesForGrouping.add(location.country);
+        if (!grouped[location.continent]) {
+          grouped[location.continent] = [];
+        }
+        grouped[location.continent].push(location.country);
       }
-      return acc;
-    }, []);
+    });
+    return grouped;
   }, [sortedLocationsByContinentAndCountry]);
 
   // Determine rank and current user's points
@@ -423,14 +429,22 @@ export default function DashboardSidebar() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('countriesVisited')}</AlertDialogTitle>
           </AlertDialogHeader>
+
           <AlertDialogDescription asChild>
             <ScrollArea className="h-60">
-              {extractSortedUniqueVisitedCountries.length > 0 ? (
-                <ul className="list-disc pl-5">
-                  {extractSortedUniqueVisitedCountries.map(countryString => (
-                    <li key={countryString}>{countryString}</li>
+              {Object.keys(groupedVisitedCountries).length > 0 ? (
+                <div> {/* Use a div to wrap the continent groups */}
+                  {Object.entries(groupedVisitedCountries).map(([continent, countries]) => (
+                    <div key={continent}> {/* Wrap each continent group */}
+                      <h3 className="text-md font-semibold mt-2">{continent}</h3> {/* Continent Title */}
+                      <ul className="list-disc pl-5"> {/* List of countries for the continent */}
+                        {countries.map(country => (
+                          <li key={country}>{country}</li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
                 <p>{t('noVisitedCountries')}</p>
               )}
