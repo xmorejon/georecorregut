@@ -16,6 +16,7 @@ import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar'
 import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results';
 import { ChangeEvent, useMemo } from 'react';
+import { countriesByContinent } from '@/data/countriesData';
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog'; // Import modal components
 export default function DashboardSidebar() {
@@ -85,23 +86,44 @@ export default function DashboardSidebar() {
     });
   }, [locations]);
 
-  // Group countries by continent from sorted locations
+  // Get the set of visited country names from user's locations
+  const visitedCountryNames = useMemo(() => {
+    if (!locations) return new Set();
+    return new Set(locations.map(location => location.country).filter(country => country));
+  }, [locations]);
+
+  // Process static country data and mark visited status
+  const countriesWithVisitStatus = useMemo(() => {
+    return countriesByContinent.map(continentData => ({
+      continent: continentData.continent,
+      countries: continentData.countries.map(country => ({
+        name: country,
+        visited: visitedCountryNames.has(country),
+      })),
+    }));
+  }, [visitedCountryNames]);
+
+  // Calculate total number of countries from static data
+  const totalCountries = useMemo(() => {
+    return countriesByContinent.reduce((count, continentData) => {
+      return count + continentData.countries.length;
+    }, 0);
+  }, []);
+
+  // Keep groupedVisitedCountries for potential other uses, but modal will use countriesWithVisitStatus
   const groupedVisitedCountries = useMemo(() => {
     if (!sortedLocationsByContinentAndCountry) return {};
-
-    const grouped: { [continent: string]: string[] } = {};
-    const uniqueCountriesForGrouping = new Set<string>();
-
-    sortedLocationsByContinentAndCountry.forEach(location => {
-      if (location.country && location.continent && !uniqueCountriesForGrouping.has(location.country)) {
-        uniqueCountriesForGrouping.add(location.country);
-        if (!grouped[location.continent]) {
-          grouped[location.continent] = [];
+    return sortedLocationsByContinentAndCountry.reduce((acc: { [key: string]: string[] }, location) => {
+      if (location.country && location.continent) {
+        if (!acc[location.continent]) {
+          acc[location.continent] = [];
         }
-        grouped[location.continent].push(location.country);
+        if (!acc[location.continent].includes(location.country)) {
+          acc[location.continent].push(location.country);
+        }
       }
-    });
-    return grouped;
+      return acc;
+    }, {});
   }, [sortedLocationsByContinentAndCountry]);
 
   // Determine rank and current user's points
@@ -349,12 +371,12 @@ export default function DashboardSidebar() {
                     <CardHeader className="py-1">
                       <CardTitle>{t('countriesVisited')}</CardTitle>
                       <CardDescription>
-                        {((uniqueCountries.length / 195) * 100).toFixed(1)}% of the world
+                        {((uniqueCountries.length / totalCountries) * 100).toFixed(1)}% of the world
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-2xl font-bold mb-2">{uniqueCountries.length} / 195</p>
-                      <Progress value={(uniqueCountries.length / 195) * 100} />
+                      <p className="text-2xl font-bold mb-2">{uniqueCountries.length} / {totalCountries}</p>
+                      <Progress value={(uniqueCountries.length / totalCountries) * 100} />
                       <br></br>
                       <Button variant="outline" className="w-full" onClick={handleDetail}>
                         <BookmarkCheck className="mr-2 h-4 w-4" /> {t('detail')}
@@ -432,22 +454,22 @@ export default function DashboardSidebar() {
 
           <AlertDialogDescription asChild>
             <ScrollArea className="h-60">
-              {Object.keys(groupedVisitedCountries).length > 0 ? (
-                <div> {/* Use a div to wrap the continent groups */}
-                  {Object.entries(groupedVisitedCountries).map(([continent, countries]) => (
-                    <div key={continent}> {/* Wrap each continent group */}
-                      <h3 className="text-md font-semibold mt-2">{continent}</h3> {/* Continent Title */}
-                      <ul className="list-disc pl-5"> {/* List of countries for the continent */}
-                        {countries.map(country => (
-                          <li key={country}>{country}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>{t('noVisitedCountries')}</p>
-              )}
+              <div>
+              {(Object.keys(groupedVisitedCountries).length > 0 && countriesWithVisitStatus.length > 0) ? 
+                (countriesWithVisitStatus.map(continentData => (
+                  <div key={continentData.continent}>
+                    <h3 className="text-md font-semibold mt-2">{continentData.continent}</h3>
+                    <ul className="list-disc pl-5">
+                      {continentData.countries.map(country => (
+                        <li key={country.name}
+                          className={country.visited ? 'text-green-600' : 'text-red-600'}
+                        >{country.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))) : (<p>{t('noVisitedCountries')}</p>)
+              }
+              </div>
             </ScrollArea>
           </AlertDialogDescription>
            <AlertDialogFooter>
