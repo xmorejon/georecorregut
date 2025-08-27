@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger, } from '@/components/ui/tabs';
-import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload } from 'lucide-react';
+import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload, ArrowRightFromLine } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { geocodeCityCountry } from '@/ai/flows/places-flow';
@@ -17,6 +17,8 @@ import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results';
 import { ChangeEvent, useMemo } from 'react';
 import { countriesByContinent } from '@/data/countriesData';
+import { ChevronDown, ChevronUp } from 'lucide-react'; // Import icons for collapse/expand
+
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog'; // Import modal components
 export default function DashboardSidebar() {
@@ -37,6 +39,8 @@ export default function DashboardSidebar() {
   } = useAppContext();
 
   const [isCountriesModalOpen, setIsCountriesModalOpen] = useState(false); // State for modal visibility
+  // State to keep track of which continents are expanded
+  const [expandedContinents, setExpandedContinents] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
 
   const uniqueContinents = useMemo(() => {
@@ -92,15 +96,21 @@ export default function DashboardSidebar() {
     return new Set(locations.map(location => location.country).filter(country => country));
   }, [locations]);
 
-  // Process static country data and mark visited status
-  const countriesWithVisitStatus = useMemo(() => {
-    return countriesByContinent.map(continentData => ({
-      continent: continentData.continent,
-      countries: continentData.countries.map(country => ({
+  // Process static country data, mark visited status, and calculate visited count per continent
+  const countriesWithVisitStatusAndVisitedCount = useMemo(() => {
+    return countriesByContinent.map(continentData => {
+      const countries = continentData.countries.map(country => ({
         name: country,
         visited: visitedCountryNames.has(country),
-      })),
-    }));
+      }));
+      const visitedCount = countries.filter(country => country.visited).length;
+      return {
+        continent: continentData.continent,
+        countries: countries,
+        visitedCount: visitedCount,
+        totalCount: continentData.countries.length,
+      };
+    });
   }, [visitedCountryNames]);
 
   // Calculate total number of countries from static data
@@ -150,6 +160,13 @@ export default function DashboardSidebar() {
     };
   }, [user, userPoints]);
     
+  // Function to toggle the expanded state of a continent
+  const handleContinentClick = (continent: string) => {
+    setExpandedContinents(prevState => ({
+      ...prevState,
+      [continent]: !prevState[continent],
+    }));
+  };
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent the click from selecting the location
     deleteLocation(id);
@@ -451,30 +468,36 @@ export default function DashboardSidebar() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('countriesVisited')}</AlertDialogTitle>
           </AlertDialogHeader>
-
           <AlertDialogDescription asChild>
             <ScrollArea className="h-60">
               <div>
-              {(Object.keys(groupedVisitedCountries).length > 0 && countriesWithVisitStatus.length > 0) ? 
-                (countriesWithVisitStatus.map(continentData => (
-                  <div key={continentData.continent}>
-                    <h3 className="text-md font-semibold mt-2">{continentData.continent}</h3>
-                    <ul className="list-disc pl-5">
-                      {continentData.countries.map(country => (
-                        <li key={country.name}
-                          className={country.visited ? 'text-green-600' : 'text-red-600'}
-                        >{country.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))) : (<p>{t('noVisitedCountries')}</p>)
-              }
+                {countriesWithVisitStatusAndVisitedCount.length > 0 ? (
+                  countriesWithVisitStatusAndVisitedCount.map(continentData => (
+                    <div key={continentData.continent}>
+                      {/* Clickable Continent Title */}
+                      <Button variant="ghost" className="w-full justify-between" onClick={() => handleContinentClick(continentData.continent)}>
+                        <h3 className="text-md font-semibold mt-2">{continentData.continent} ({continentData.visitedCount} of {continentData.totalCount})</h3> {/* Display counts */}
+                          <ArrowRightFromLine className="mr-2 h-4 w-4" />
+                      </Button>
+                      {/* Conditionally Render Countries List */}
+                      {expandedContinents[continentData.continent] && (
+                        <ul className="list-disc pl-5 ml-4">
+                          {continentData.countries.map(country => (
+                          <li key={country.name} className={country.visited ? 'text-green-600' : 'text-red-600'}>{country.name}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p>{t('noVisitedCountries')}</p>
+                )}
               </div>
             </ScrollArea>
           </AlertDialogDescription>
-           <AlertDialogFooter>
-              <AlertDialogCancel>{t('close')}</AlertDialogCancel>
-             </AlertDialogFooter>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('close')}</AlertDialogCancel>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
