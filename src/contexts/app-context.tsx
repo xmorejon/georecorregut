@@ -306,12 +306,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  const filteredLocations = useMemo(() => {
-    if (!searchTerm) return locations;
-    return locations.filter(location =>
-      location.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [locations, searchTerm]);
+  const filteredLocations = locations.filter(location => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const lowerCaseName = location.name.toLowerCase();
+    const lowerCaseCountry = location.country.toLowerCase();
+  
+    // Check if the searchTerm is present in the location name OR the location country
+    return lowerCaseName.includes(lowerCaseSearchTerm) || lowerCaseCountry.includes(lowerCaseSearchTerm);
+  });
 
   const value: AppContextType = {
     locations,
