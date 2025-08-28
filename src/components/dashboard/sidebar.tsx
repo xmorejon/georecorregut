@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger, } from '@/components/ui/tabs';
-import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload, ArrowRightFromLine } from 'lucide-react';
+import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload, ChevronDown, MapPinPlus } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { geocodeCityCountry } from '@/ai/flows/places-flow';
@@ -17,8 +17,6 @@ import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results';
 import { ChangeEvent, useMemo } from 'react';
 import { countriesByContinent } from '@/data/countriesData';
-import { ChevronDown, ChevronUp } from 'lucide-react'; // Import icons for collapse/expand
-
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog'; // Import modal components
 export default function DashboardSidebar() {
@@ -301,11 +299,11 @@ export default function DashboardSidebar() {
     <div>
       <Sidebar>
         <SidebarContent>
-          <Tabs defaultValue="search" className="flex flex-col h-full" onValueChange={setActiveTab}>
+          <Tabs defaultValue="stats" className="flex flex-col h-full" onValueChange={setActiveTab}>
             <SidebarHeader>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="stats"><Globe className="h-4 w-4 mr-1 inline-block" /> {t('stats')}</TabsTrigger>
-                <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
+                <TabsTrigger value="search"><MapPinPlus className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
                 <TabsTrigger value="data"><Download className="h-4 w-4 mr-1 inline-block" /> {t('data')}</TabsTrigger>
               </TabsList>
             </SidebarHeader>
@@ -478,7 +476,7 @@ export default function DashboardSidebar() {
                       {/* Clickable Continent Title */}
                       <Button variant="ghost" className="w-full justify-between" onClick={() => handleContinentClick(continentData.continent)}>
                         <h3 className="text-md font-semibold mt-2">{continentData.continent} ({continentData.visitedCount} of {continentData.totalCount})</h3> {/* Display counts */}
-                          <ArrowRightFromLine className="mr-2 h-4 w-4" />
+                          <ChevronDown className="mr-2 h-4 w-4" />
                       </Button>
                       {/* Conditionally Render Countries List */}
                       {expandedContinents[continentData.continent] && (
