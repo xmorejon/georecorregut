@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger, } from '@/components/ui/tabs';
-import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload, ChevronDown, MapPinPlus } from 'lucide-react';
+import { Download, Globe, Heart, BookmarkCheck, Search, Trash2, Upload, ChevronDown, MapPinPlus, Medal } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { geocodeCityCountry } from '@/ai/flows/places-flow';
@@ -341,7 +341,7 @@ export default function DashboardSidebar() {
                     <CardContent>
                       <p className="text-2xl font-bold mb-2">{uniqueCountries.length} / {totalCountries}</p>
                       <Progress value={(uniqueCountries.length / totalCountries) * 100} />
-                      <br></br>
+                      <div className="small-spacer"></div>
                       <Button variant="outline" className="w-full" onClick={handleDetail}>
                         <BookmarkCheck className="mr-2 h-4 w-4" /> {t('detail')}
                       </Button>
@@ -361,6 +361,10 @@ export default function DashboardSidebar() {
                           {userRank.currentUserPoints}
                           {t('totalPointsSuffix')}
                         </p>
+                        <div className="small-spacer"></div>
+                        <Button variant="outline" className="w-full" onClick={handleDetail}>
+                          <Medal className="mr-2 h-4 w-4" /> {t('detail')}
+                        </Button>
                       </CardContent>
                     </Card>
                   )}

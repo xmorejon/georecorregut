@@ -56,7 +56,9 @@
     --sidebar-border: 217.2 32.6% 20%; /* Border color for sidebar elements */
     --sidebar-ring: 204 70% 45%; /* Ring color for sidebar elements */
   }
-
+  .small-spacer {
+    height: 5px; /* small breakline */
+  }
   
 }
 
