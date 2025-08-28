@@ -70,7 +70,7 @@ export default function DashboardSidebar() {
   // Calculate points for all users
   const userPoints = useMemo(() => {
     if (!allUsersUniqueLocations) return [];
-    
+  
     return Object.entries(allUsersUniqueLocations).map(([userId, data]) => {
       const continentPoints = data.continents.length * 10; // 10 points per continent
       const countryPoints = data.countries.length; // 1 point per country
@@ -573,7 +573,7 @@ export default function DashboardSidebar() {
                       <Card key={userData.userId} className={userData.isCurrentUser ? 'border-blue-500' : ''}> {/* Highlight current user */}
                         <CardHeader className="py-2">
                           <CardTitle>
-                            {userData.rank}. {userData.isCurrentUser ? t('you') : `User ${userData.userName.substring(0, 6)}...`}
+                            {userData.rank}. {userData.isCurrentUser ? t('you') : `User ${userData.userName ? userData.userName.substring(0, 6) : 'Anonymous'}...`}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
