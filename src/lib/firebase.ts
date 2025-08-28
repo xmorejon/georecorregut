@@ -48,7 +48,7 @@ const getAllUsersUniqueLocationsData = async () => {
 
   for (const userDoc of usersSnapshot.docs) {
     const userId = userDoc.id;
-    const userName = userDoc.data().userName;
+    const userName = userDoc.data().name;
     const uniqueCountries = new Set<string>();
     const uniqueContinents = new Set<string>();
     const locationsRef = collection(db, 'users', userId, 'locations');

@@ -69,14 +69,16 @@ export default function DashboardSidebar() {
 
   // Calculate points for all users
   const userPoints = useMemo(() => {
+
     if (!allUsersUniqueLocations) return [];
-    
+
     return Object.entries(allUsersUniqueLocations).map(([userId, data]) => {
       const continentPoints = data.continents.length * 10; // 10 points per continent
       const countryPoints = data.countries.length; // 1 point per country
+      const userName = data.userName;
       return {
         userId,
-        userName: data.userName,
+        userName,
         points: continentPoints + countryPoints,
       };
     });
@@ -571,12 +573,12 @@ export default function DashboardSidebar() {
                     {/* Render Ranking Data */}
                     {sortedRankingData.map(userData => (
                       <Card key={userData.userId} className={userData.isCurrentUser ? 'border-blue-500' : ''}> {/* Highlight current user */}
-                        <CardHeader className="py-2">
+                        <CardHeader className="py-1">
                           <CardTitle>
-                            {userData.rank}. {userData.isCurrentUser ? t('you') : `User ${userData.userName.substring(0, 6)}...`}
+                            {userData.rank} - {userData.userName} {userData.isCurrentUser ? t('you') : ``}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="py-2">
                           <p>{t('totalPoints')}: {userData.totalPoints}</p>
                           <p>{t('continentsVisited')}: {userData.continentsVisitedCount} ({userData.continentsVisitedPoints} {t('points')})</p>
                           <p>{t('countriesVisited')}: {userData.countriesVisitedCount} ({userData.countriesVisitedPoints} {t('points')})</p>

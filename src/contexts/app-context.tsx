@@ -37,7 +37,7 @@ interface AppContextType {
   ) => void;
   handleImportJSON: (file: File) => void;
   toggleFavoriteStatus: (id: string, isFavorite: boolean) => void;
-  allUsersUniqueLocations: { [key: string]: { countries: string[], continents: string[] } };
+  allUsersUniqueLocations: { [key: string]: { userName: string, countries: string[], continents: string[] } };
   userThemePreference: UserData['themePreference'];
 }
 //

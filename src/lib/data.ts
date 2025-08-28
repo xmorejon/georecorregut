@@ -10,12 +10,12 @@ export const translations: Translations = {
     data: 'Dades',
     searchPlaceholder: 'Cerca llocs nous...',
     noResults: 'No s\'han trobat resultats.',
-    locationsVisited: 'Ubicacions Visitades',
-    continentsVisited: 'Continents Visitats',
+    locationsVisited: 'Ubicacions visitades',
+    continentsVisited: 'Continents visitats',
     csvFormatInfo: 'Format del Fitxer CSV (valors separats per punt i coma): Hi ha dues columnes obligatòries, una amb el País (Country) i una columna amb la Ciutat (City). Columna opcional (Favorite) per identificar les preferides. Altres columnes seran ignorades',
-    countriesVisited: 'Països Visitats',
-    importData: 'Importar Dades',
-    exportData: 'Exportar Dades',
+    countriesVisited: 'Països visitats',
+    importData: 'Importar dades',
+    exportData: 'Exportar dades',
     importCSV: 'Importar CSV',
     exportAsJSON: 'Exportar com a JSON',
     importJSON: 'Importar JSON',
@@ -64,7 +64,9 @@ export const translations: Translations = {
     totalPointsSuffix: ")",
     detail: "Detall",
     close: "Tancar",
-    noVisitedCountries: "0 països visitats!"
+    noVisitedCountries: "0 països visitats!",
+    you: " (tu)",
+    totalPoints: "Punts totals:"
   },
   es: {
     appName: 'GeoRecorrido',
@@ -73,12 +75,12 @@ export const translations: Translations = {
     data: 'Datos',
     searchPlaceholder: 'Busca nuevos lugares...',
     noResults: 'No se encontraron resultados.',
-    locationsVisited: 'Ubicaciones Visitadas',
-    continentsVisited: 'Continentes Visitados',
+    locationsVisited: 'Ubicaciones visitadas',
+    continentsVisited: 'Continentes visitados',
     csvFormatInfo: 'Formato del Archivo CSV (valores separados por punto y comas): Hay dos columnas obligatorias, una con el País (Country) y una columna con la Ciudad (City). Una columna opcional (Favorite) para marcar favoritos. Otras columnas serán ignoradas',
-    countriesVisited: 'Países Visitados',
-    importData: 'Importar Datos',
-    exportData: 'Exportar Datos',
+    countriesVisited: 'Países visitados',
+    importData: 'Importar datos',
+    exportData: 'Exportar datos',
     importCSV: 'Importar CSV',
     exportAsJSON: 'Exportar como JSON',
     importJSON: 'Importar JSON',
@@ -127,7 +129,9 @@ export const translations: Translations = {
     totalPointsSuffix: ")",
     detail: "Detalle",
     close: "Cerrar",
-    noVisitedCountries: "0 paises visitados!"
+    noVisitedCountries: "0 paises visitados!",
+    you: " (tu)",
+    totalPoints: "Puntos en total:"
   },
   en: {
     appName: 'GeoJourney',
@@ -136,10 +140,10 @@ export const translations: Translations = {
     data: 'Data',
     searchPlaceholder: 'Search for new places...',
     noResults: 'No results found.',
-    locationsVisited: 'Locations Visited',
-    continentsVisited: 'Continents Visited',
+    locationsVisited: 'Locations visited',
+    continentsVisited: 'Continents visited',
     csvFormatInfo: 'Format of the CSV File (point-comma ; separated value): There are two mandatory columns, one with the Country (Country) and a column with the City (City). Another optional column (Favorite) to import as favorite location. Other columns will be ignored',
-    countriesVisited: 'Countries Visited',
+    countriesVisited: 'Countries visited',
     importData: 'Import Data',
     exportData: 'Export Data',
     importCSV: 'Import CSV',
@@ -189,7 +193,9 @@ export const translations: Translations = {
     totalPointsSuffix: ")",
     detail: "Detail",
     close: "Close",
-    noVisitedCountries: "no coutries visited!"
+    noVisitedCountries: "no coutries visited!",
+    you: " (yo)",
+    totalPoints: "Total points:"
   },
 };
 
