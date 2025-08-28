@@ -6,7 +6,7 @@ export const translations: Translations = {
   ca: {
     appName: 'GeoRecorregut',
     search: 'Cerca',
-    stats: 'Estadístiques',
+    stats: 'Viatges',
     data: 'Dades',
     searchPlaceholder: 'Cerca llocs nous...',
     noResults: 'No s\'han trobat resultats.',
@@ -69,7 +69,7 @@ export const translations: Translations = {
   es: {
     appName: 'GeoRecorrido',
     search: 'Buscar',
-    stats: 'Estadísticas',
+    stats: 'Viajes',
     data: 'Datos',
     searchPlaceholder: 'Busca nuevos lugares...',
     noResults: 'No se encontraron resultados.',
@@ -132,7 +132,7 @@ export const translations: Translations = {
   en: {
     appName: 'GeoJourney',
     search: 'Search',
-    stats: 'Statistics',
+    stats: 'Travels',
     data: 'Data',
     searchPlaceholder: 'Search for new places...',
     noResults: 'No results found.',

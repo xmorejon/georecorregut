@@ -304,63 +304,12 @@ export default function DashboardSidebar() {
           <Tabs defaultValue="search" className="flex flex-col h-full" onValueChange={setActiveTab}>
             <SidebarHeader>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
                 <TabsTrigger value="stats"><Globe className="h-4 w-4 mr-1 inline-block" /> {t('stats')}</TabsTrigger>
+                <TabsTrigger value="search"><Search className="h-4 w-4 mr-1 inline-block" /> {t('search')}</TabsTrigger>
                 <TabsTrigger value="data"><Download className="h-4 w-4 mr-1 inline-block" /> {t('data')}</TabsTrigger>
               </TabsList>
             </SidebarHeader>
             
-            <TabsContent value="search" className="flex-1 overflow-hidden">
-              <div className="flex flex-col h-full p-4 pt-0">
-                <div className="relative mb-4">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder={t('searchPlaceholder')}
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <ScrollArea className="flex-1">
-                  <div className="space-y-2">
-                    <PlaceSearchResults />
-
-                    <h2 className="text-lg font-semibold mt-4 pt-4 border-t">{t('myLocations')}</h2>
-                    {filteredLocations.length > 0 ? (
-                      filteredLocations
-                        .sort((a, b) => {
-                          if (a.country < b.country) return -1;
-                          if (a.country > b.country) return 1;
-                          return a.name.localeCompare(b.name);
-                        }).map(location => (
-                          <div
-                            key={location.id}
-                            onClick={() => setSelectedLocation(location)}
-                            className="cursor-pointer rounded-lg border p-2 hover:bg-accent transition-colors flex justify-between items-center group"
-                          >
-                            <div>
-                              <p className="font-semibold">{location.name}</p>
-                              <p className="text-sm text-muted-foreground">{location.country}</p>
-                            </div>
-                            <div className="flex items-center">
-                              <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleToggleFavorite(e, location.id)}>
-                                <Heart className={`h-4 w-4 ${location.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} />
-                              </Button>
-                              <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                    ) : (
-                      searchTerm.length === 0 && <p className="text-center text-muted-foreground">{t('noLocations')}</p>
-                    )}
-                    {filteredLocations.length === 0 && searchTerm.length > 0 && <p className="text-center text-muted-foreground">{t('noResults')}</p>}
-                  </div>
-                </ScrollArea>
-              </div>
-            </TabsContent>
             <TabsContent value="stats" className="flex-1 overflow-hidden">
               <ScrollArea className="h-full p-4">
                 <div className="space-y-4">
@@ -421,6 +370,58 @@ export default function DashboardSidebar() {
               </ScrollArea>
             </TabsContent>
 
+            <TabsContent value="search" className="flex-1 overflow-hidden">
+              <div className="flex flex-col h-full p-4 pt-0">
+                <div className="relative mb-4">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder={t('searchPlaceholder')}
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <ScrollArea className="flex-1">
+                  <div className="space-y-2">
+                    <PlaceSearchResults />
+
+                    <h2 className="text-lg font-semibold mt-4 pt-4 border-t">{t('myLocations')}</h2>
+                    {filteredLocations.length > 0 ? (
+                      filteredLocations
+                        .sort((a, b) => {
+                          if (a.country < b.country) return -1;
+                          if (a.country > b.country) return 1;
+                          return a.name.localeCompare(b.name);
+                        }).map(location => (
+                          <div
+                            key={location.id}
+                            onClick={() => setSelectedLocation(location)}
+                            className="cursor-pointer rounded-lg border p-2 hover:bg-accent transition-colors flex justify-between items-center group"
+                          >
+                            <div>
+                              <p className="font-semibold">{location.name}</p>
+                              <p className="text-sm text-muted-foreground">{location.country}</p>
+                            </div>
+                            <div className="flex items-center">
+                              <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleToggleFavorite(e, location.id)}>
+                                <Heart className={`h-4 w-4 ${location.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100" onClick={(e) => handleDelete(e, location.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      searchTerm.length === 0 && <p className="text-center text-muted-foreground">{t('noLocations')}</p>
+                    )}
+                    {filteredLocations.length === 0 && searchTerm.length > 0 && <p className="text-center text-muted-foreground">{t('noResults')}</p>}
+                  </div>
+                </ScrollArea>
+              </div>
+            </TabsContent>
+            
             <TabsContent value="data" className="flex-1 overflow-hidden">
               <div className="h-full p-4 space-y-4">
                 <Card>
