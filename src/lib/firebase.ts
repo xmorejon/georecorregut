@@ -44,10 +44,11 @@ const deleteUserDocument = async (uid: string) => {
 const getAllUsersUniqueLocationsData = async () => {
   const usersRef = collection(db, 'users');
   const usersSnapshot = await getDocs(usersRef);
-  const allUsersUniqueData: { [key: string]: { countries: string[], continents: string[] } } = {};
+  const allUsersUniqueData: { [key: string]: { userName: string, countries: string[], continents: string[] } } = {};
 
   for (const userDoc of usersSnapshot.docs) {
     const userId = userDoc.id;
+    const userName = userDoc.data().userName;
     const uniqueCountries = new Set<string>();
     const uniqueContinents = new Set<string>();
     const locationsRef = collection(db, 'users', userId, 'locations');
@@ -65,6 +66,7 @@ const getAllUsersUniqueLocationsData = async () => {
     });
 
     allUsersUniqueData[userId] = {
+      userName: userName,
       countries: Array.from(uniqueCountries),
       continents: Array.from(uniqueContinents),
     };

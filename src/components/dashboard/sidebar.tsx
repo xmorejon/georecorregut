@@ -19,6 +19,19 @@ import { ChangeEvent, useMemo } from 'react';
 import { countriesByContinent } from '@/data/countriesData';
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog'; // Import modal components
+
+interface UserRankingData {
+  userId: string;
+  userName: string;
+  rank: number;
+  totalPoints: number;
+  continentsVisitedCount: number;
+  continentsVisitedPoints: number;
+  countriesVisitedCount: number;
+  countriesVisitedPoints: number;
+  isCurrentUser: boolean;
+}
+
 export default function DashboardSidebar() {
   const {
     t,
@@ -38,6 +51,7 @@ export default function DashboardSidebar() {
 
   const [isCountriesModalOpen, setIsCountriesModalOpen] = useState(false); // State for modal visibility
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false); // State for modal visibility
+  const [loadingRanking, setLoadingRanking] = useState(false);
 
   // State to keep track of which continents are expanded
   const [expandedContinents, setExpandedContinents] = useState<{ [key: string]: boolean }>({});
@@ -55,18 +69,50 @@ export default function DashboardSidebar() {
 
   // Calculate points for all users
   const userPoints = useMemo(() => {
-
     if (!allUsersUniqueLocations) return [];
-
+    
     return Object.entries(allUsersUniqueLocations).map(([userId, data]) => {
-      const continentPoints = data.continents.length * 10;
-      const countryPoints = data.countries.length;
+      const continentPoints = data.continents.length * 10; // 10 points per continent
+      const countryPoints = data.countries.length; // 1 point per country
       return {
         userId,
-        points: continentPoints + countryPoints, // Ensure points are calculated correctly here
+        userName: data.userName,
+        points: continentPoints + countryPoints,
       };
     });
   }, [allUsersUniqueLocations]);
+  
+  // Calculate and sort ranking data for all users
+  const sortedRankingData = useMemo(() => {
+    if (!user || userPoints.length === 0) return [];
+
+    // Sort users by points in descending order
+    const sortedUsers = [...userPoints].sort((a, b) => b.points - a.points);
+
+    // Enhance the data with rank and other details
+    const rankingWithDetails: UserRankingData[] = sortedUsers.map((userPoint, index) => {
+      const userData = allUsersUniqueLocations?.[userPoint.userId];
+
+      const continentsVisitedCount = userData?.continents.length || 0;
+      const countriesVisitedCount = userData?.countries.length || 0;
+
+      const continentsVisitedPoints = continentsVisitedCount * 10;
+      const countriesVisitedPoints = countriesVisitedCount;
+
+      return {
+        userId: userPoint.userId,
+        userName: userPoint.userName,
+        rank: index + 1,
+        totalPoints: userPoint.points,
+        continentsVisitedCount,
+        continentsVisitedPoints,
+        countriesVisitedCount,
+        countriesVisitedPoints,
+        isCurrentUser: userPoint.userId === user.uid,
+        };
+    });
+    return rankingWithDetails;
+  }, [user, userPoints, allUsersUniqueLocations]); // Dependencies
 
   // Sort locations by Continent and then Country
   const sortedLocationsByContinentAndCountry = useMemo(() => {
@@ -516,11 +562,28 @@ export default function DashboardSidebar() {
             <AlertDialogTitle>{t('rankTitle')}</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription asChild>
-            <ScrollArea className="h-60">
-              <div>
-                {countriesWithVisitStatusAndVisitedCount.length > 0 ? (
-                  // PLACEHOLDER FOR RANKING DATA
-                  <p>{t('placeholder')}</p>
+            <ScrollArea className="h-96"> {/* Increased height for potentially more ranking data */}
+              <div className="space-y-4">
+                {loadingRanking ? (
+                  <p>{t('loadingRanking')}</p>
+                ) : sortedRankingData.length > 0 ? (
+                  <>
+                    {/* Render Ranking Data */}
+                    {sortedRankingData.map(userData => (
+                      <Card key={userData.userId} className={userData.isCurrentUser ? 'border-blue-500' : ''}> {/* Highlight current user */}
+                        <CardHeader className="py-2">
+                          <CardTitle>
+                            {userData.rank}. {userData.isCurrentUser ? t('you') : `User ${userData.userName.substring(0, 6)}...`}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p>{t('totalPoints')}: {userData.totalPoints}</p>
+                          <p>{t('continentsVisited')}: {userData.continentsVisitedCount} ({userData.continentsVisitedPoints} {t('points')})</p>
+                          <p>{t('countriesVisited')}: {userData.countriesVisitedCount} ({userData.countriesVisitedPoints} {t('points')})</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </>
                 ) : (
                   <p>{t('noResults')}</p>
                 )}

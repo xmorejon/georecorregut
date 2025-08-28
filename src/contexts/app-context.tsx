@@ -51,7 +51,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('search');
-  const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { countries: string[], continents: string[] } }>({});
+  const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { userName: string, countries: string[], continents: string[] } }>({});
   const [locations, setLocations] = useState<Location[]>([]);
   const [userThemePreference, setUserThemePreference] = useState<UserData['themePreference']>('system'); // State for user theme preference
 
