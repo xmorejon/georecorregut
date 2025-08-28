@@ -179,12 +179,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         name: place.name,
         country: place.country,
         continent: place.continent,
- isFavorite: false, // Default to false when adding from place search
+        isFavorite: false, // Default to false when adding from place search
       },
       place.id,
       callback
     );
-    setSearchTerm(''); // Clear search term after adding location
+    // Clear search term after adding location
+    //setSearchTerm(''); 
   }, [addLocation]);
   
   const deleteLocation = useCallback(async (id: string) => {

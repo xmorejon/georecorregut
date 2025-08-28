@@ -64,27 +64,6 @@ export function PlaceSearchResults() {
               size="icon"
               variant="ghost"
               className="shrink-0 h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                // Find the corresponding location in the `locations` array to get its current favorite status
-                const locationToToggle = locations.find(loc => loc.id === place.id);
-                if (locationToToggle) {
- toggleFavoriteStatus(place.id, !locationToToggle.isFavorite);
-                }
-              }}
-            >
-              <Heart
-                className={`h-4 w-4 ${
-                  locations.some((loc) => loc.id === place.id && loc.isFavorite)
-                    ? 'text-red-500 fill-red-500'
-                    : 'text-gray-400'
-                }`}
-              />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="shrink-0 h-8 w-8"
               disabled={addingId === place.id}
               onClick={(e) => {
                 e.stopPropagation();
