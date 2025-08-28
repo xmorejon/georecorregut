@@ -37,6 +37,8 @@ export default function DashboardSidebar() {
   } = useAppContext();
 
   const [isCountriesModalOpen, setIsCountriesModalOpen] = useState(false); // State for modal visibility
+  const [isRankingModalOpen, setIsRankingModalOpen] = useState(false); // State for modal visibility
+
   // State to keep track of which continents are expanded
   const [expandedContinents, setExpandedContinents] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
@@ -173,6 +175,10 @@ export default function DashboardSidebar() {
   const handleDetail = () => {
     setIsCountriesModalOpen(true); // Open the countries modal
   }
+
+  const handleRanking = () => {
+    setIsRankingModalOpen(true); // Open the ranking modal
+  }  
 
   const handleToggleFavorite = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent the click from selecting the location
@@ -362,7 +368,7 @@ export default function DashboardSidebar() {
                           {t('totalPointsSuffix')}
                         </p>
                         <div className="small-spacer"></div>
-                        <Button variant="outline" className="w-full" onClick={handleDetail}>
+                        <Button variant="outline" className="w-full" onClick={handleRanking}>
                           <Medal className="mr-2 h-4 w-4" /> {t('detail')}
                         </Button>
                       </CardContent>
@@ -494,6 +500,29 @@ export default function DashboardSidebar() {
                   ))
                 ) : (
                   <p>{t('noVisitedCountries')}</p>
+                )}
+              </div>
+            </ScrollArea>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('close')}</AlertDialogCancel>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isRankingModalOpen} onOpenChange={setIsRankingModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('rankTitle')}</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription asChild>
+            <ScrollArea className="h-60">
+              <div>
+                {countriesWithVisitStatusAndVisitedCount.length > 0 ? (
+                  // PLACEHOLDER FOR RANKING DATA
+                  <p>{t('placeholder')}</p>
+                ) : (
+                  <p>{t('noResults')}</p>
                 )}
               </div>
             </ScrollArea>
