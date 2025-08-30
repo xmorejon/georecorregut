@@ -80,8 +80,8 @@ export const countriesByContinent = [
       "Japan",
       "Jordan",
       "Kazakhstan",
-      "Korea, Democratic People's Republic of (North Korea)",
-      "Korea, Republic of (South Korea)",
+      "North Korea",
+      "South Korea",
       "Kuwait",
       "Kyrgyzstan",
       "Lao People's Democratic Republic",
@@ -122,6 +122,7 @@ export const countriesByContinent = [
       "Belgium",
       "Bosnia and Herzegovina",
       "Bulgaria",
+      "Catalunya",
       "Croatia",
       "Czechia",
       "Denmark",
@@ -130,7 +131,6 @@ export const countriesByContinent = [
       "France",
       "Germany",
       "Greece",
-      "Holy See (Vatican City) (Observer State)",
       "Hungary",
       "Iceland",
       "Ireland",
@@ -149,7 +149,7 @@ export const countriesByContinent = [
       "Poland",
       "Portugal",
       "Romania",
-      "Russian Federation",
+      "Russia",
       "San Marino",
       "Serbia",
       "Slovakia",
@@ -158,7 +158,8 @@ export const countriesByContinent = [
       "Sweden",
       "Switzerland",
       "Ukraine",
-      "United Kingdom"
+      "United Kingdom",
+      "Vatican City",
     ]
   },
   {
@@ -186,7 +187,7 @@ export const countriesByContinent = [
       "Saint Lucia",
       "Saint Vincent and the Grenadines",
       "Trinidad and Tobago",
-      "United States of America"
+      "United States"
     ]
   },
   {
