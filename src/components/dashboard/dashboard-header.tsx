@@ -89,10 +89,12 @@ export default function DashboardHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       {isMobile && <SidebarTrigger />}
-      <Link href="/" className="flex items-center gap-2">
+      {/* HIDDEN XMB
+        <Link href="/" className="flex items-center gap-2">
         <Logo className="h-8 w-8" />
         <span className="hidden text-lg font-semibold md:block font-headline">{t('appName')}</span>
       </Link>
+      */}
       <div className="ml-auto flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
