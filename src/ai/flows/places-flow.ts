@@ -4,7 +4,7 @@
  * - searchPlacesByText - Searches for places based on a text query.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/config';
 import { z } from 'zod';
 import type { Place } from '@/lib/types';
 import { Continents } from '@/lib/data';
@@ -43,7 +43,7 @@ export async function searchPlacesByText(input: PlacesSearchInput): Promise<Plac
   return searchPlacesByTextFlow(input);
 }
 
-const searchPlacesByTextFlow = ai.defineFlow(
+export const searchPlacesByTextFlow = ai.defineFlow(
   {
     name: 'searchPlacesByTextFlow',
     inputSchema: PlacesSearchInputSchema,
