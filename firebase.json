@@ -5,37 +5,21 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
-  },
-  "apphosting": [
-    {
-      "backend": {
-        "backendId": "georecorregut",
-        "region": "europe-west4",
-        "rootDir": ".",
-        "ignore": [
-          "node_modules",
-          ".git",
-          "firebase-debug.log",
-          "firebase-debug.*.log",
-          "functions"
-        ],
-        "env": {
-          "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": {
-            "secret": "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
-          },
-          "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID": {
-            "secret": "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID"
-          },
-          "GEMINI_API_KEY": {
-            "secret": "GEMINI_API_KEY"
-          },
-          "GOOGLE_API_KEY": {
-            "secret": "GOOGLE_API_KEY"
-          }
-        }
+    ],
+    "env": {
+      "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": {
+        "secret": "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
+      },
+      "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID": {
+        "secret": "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID"
+      },
+        "GEMINI_API_KEY": {
+        "secret": "GEMINI_API_KEY"
+      },
+        "GOOGLE_API_KEY": {
+          "secret": "GOOGLE_API_KEY"
       }
     }
-  ]
+  }
 }
 
