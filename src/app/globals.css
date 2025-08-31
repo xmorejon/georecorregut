@@ -1,0 +1,72 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 208 29% 95%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 208 29% 95%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 208 29% 95%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 204 70% 40%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 167 44% 49%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 204 70% 40%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 220 20% 8%; /* Darker gray background */
+    --foreground: 210 30% 80%; /* Light gray foreground */
+    --card: 220 20% 12%; /* Slightly lighter dark gray for cards */
+    --card-foreground: 210 30% 85%; /* Slightly lighter light gray for card text */
+    --popover: 220 20% 12%; /* Slightly lighter dark gray for popovers */
+    --popover-foreground: 210 30% 85%; /* Slightly lighter light gray for popover text */
+    --primary: 200 80% 60%; /* Vibrant blue primary */
+    --primary-foreground: 220 20% 8%; /* Background color for primary text */
+    --secondary: 217.2 32.6% 25%; /* Darker secondary */
+    --secondary-foreground: 210 30% 80%; /* Light gray for secondary text */
+    --muted: 217.2 32.6% 25%; /* Darker muted */
+    --muted-foreground: 215 20.2% 50%; /* Medium gray for muted text */
+    --accent: 140 70% 50%; /* Contrasting green accent */
+    --accent-foreground: 220 20% 8%; /* Background color for accent text */
+    --destructive: 0 62.8% 30.6%; /* Keep destructive the same or adjust as needed */
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%; /* Keep border the same or adjust as needed */
+    --input: 217.2 32.6% 17.5%;
+    --ring: 204 70% 50%;
+    --sidebar-background: 220 20% 10%; /* Dark background for sidebar */
+    --sidebar-foreground: 210 30% 75%; /* Light gray text for sidebar */
+    --sidebar-primary: 200 80% 50%; /* Primary color for sidebar elements */
+    --sidebar-primary-foreground: 220 20% 8%; /* Text color for primary sidebar elements */
+    --sidebar-accent: 140 70% 40%; /* Accent color for sidebar elements */
+    --sidebar-accent-foreground: 220 20% 8%; /* Text color for accent sidebar elements */
+    --sidebar-border: 217.2 32.6% 20%; /* Border color for sidebar elements */
+    --sidebar-ring: 204 70% 45%; /* Ring color for sidebar elements */
+  }
+  .small-spacer {
+    height: 5px; /* small breakline */
+  }
+  
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
