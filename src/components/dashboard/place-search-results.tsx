@@ -16,7 +16,6 @@ export function PlaceSearchResults() {
     previewPlace,
     searchTerm,
     locations,
- toggleFavoriteStatus,
   } = useAppContext();
   const { toast } = useToast();
   const [addingId, setAddingId] = useState<string | null>(null);

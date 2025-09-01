@@ -15,7 +15,7 @@ import { geocodeCityCountry } from '@/ai/flows/places-flow';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
 import { Location } from '@/lib/types';
 import { PlaceSearchResults } from './place-search-results';
-import { ChangeEvent, useMemo } from 'react';
+import { useMemo } from 'react';
 import { countriesByContinent } from '@/data/countriesData';
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog'; // Import modal components

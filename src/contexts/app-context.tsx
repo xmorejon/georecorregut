@@ -147,7 +147,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         country: details.country || 'Unknown',
         continent: details.continent || 'Unknown',
         isFavorite: details.isFavorite ?? false,
- };
+      };
       
       const docRef = placeId 
         ? doc(db, 'users', user.uid, 'locations', placeId)
@@ -278,6 +278,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         searchPlacesByText({ query: searchTerm })
           .then(results => {
             // Ensure each place object has a string id and other required properties
+            /* ORIGINAL FUNCTION
             const validResults: Place[] = results.map(result => ({
               id: result.id || Date.now().toString(), // Provide a fallback ID
               name: result.name || 'Unknown Place', // Provide a default name if missing
@@ -288,6 +289,36 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
               continent: result.continent || 'Unknown Continent', // Provide a default continent if missing
               // isFavorite is not part of Place type, so we don't include it here
             }));
+            */
+            // XMOREJON Modified Version to handle CATALUNYA:
+            const validResults: Place[] = results.map(result => {
+              // First, create a base place object with default values
+              const place: Place = {
+                id: result.id || Date.now().toString(),
+                name: result.name || 'Unknown Place',
+                address: result.address || 'Unknown Address',
+                lat: result.lat || 0,
+                lng: result.lng || 0,
+                country: result.country || 'Unknown Country',
+                continent: result.continent || 'Unknown Continent',
+              };
+            
+              // Now, check for specific conditions and apply transformations
+              if (place.country === 'Spain') {
+                //console.log(`Geocoding Spain for ${place.name}, ${place.address}: Check if Catalunya?`);
+                if (place.address.toLowerCase().includes('barcelona') || place.address.toLowerCase().includes('tarragona') || 
+                    place.address.toLowerCase().includes('lleida') || place.address.toLowerCase().includes('girona')) {
+    
+                  place.country = 'Catalunya';
+                  place.address = place.address.replace(/Spain/gi, 'Catalunya');
+                  console.log(`Geocoding set Catalunya for City: ${place.name} Address: ${place.address}`);
+                }
+              }
+              // Return the (potentially transformed) place object add add it to the validResults array
+              return place;
+            });
+            // end CATALUNYA HANDLING
+
             setPlaceSearchResults(validResults);
           })
           .catch(error => {

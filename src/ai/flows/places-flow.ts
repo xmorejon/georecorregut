@@ -85,11 +85,18 @@ export const searchPlacesByTextFlow = ai.defineFlow(
       }
 
       const results: Place[] = await Promise.all(data.places.map(async (place: any) => {
+
         const countryComponent = place.addressComponents?.find((c: any) => c.types.includes('country'));
         const countryName = countryComponent?.longText || 'Unknown';
         const countryCode = countryComponent?.shortText || '';
         const continentName = await getContinent(countryCode);
         
+        // CATALUNYA HANDLING
+        if (countryName === 'Spain') {
+          console.log(`Geocoding Spain for ${place.displayName.text}, ${place.address_components}: Check if Catalunya.`);
+        }
+        console.log(`Geocoding Search for ${place.displayName.text}, ${place.address_components}: Check if Catalunya.`);
+
         return {
             id: place.id,
             name: place.displayName.text,
@@ -145,6 +152,11 @@ export async function geocodeCityCountry(city: string, country: string): Promise
       // Check for 'locality' first, then 'political' if locality is not available
       const cityComponent = result.address_components?.find((c: any) => c.types.includes('locality') || c.types.includes('political'));
       const cityName = cityComponent?.long_name || city; // Use provided city if API doesn't return a clear locality
+      
+      // CATALUNYA HANDLING
+      if (countryName === 'Spain') {
+        console.log(`Geocoding Spain for ${city}, ${result.address_components}: Check if Catalunya.`);
+      }
 
       return {
         id: result.place_id || Date.now().toString(), // Use place_id or generate
