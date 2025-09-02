@@ -148,7 +148,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         continent: details.continent || 'Unknown',
         isFavorite: details.isFavorite ?? false,
       };
-      
+
       const docRef = placeId 
         ? doc(db, 'users', user.uid, 'locations', placeId)
         : doc(collection(db, 'users', user.uid, 'locations'));
@@ -277,19 +277,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         setIsSearchingPlaces(true);
         searchPlacesByText({ query: searchTerm })
           .then(results => {
-            // Ensure each place object has a string id and other required properties
-            /* ORIGINAL FUNCTION
-            const validResults: Place[] = results.map(result => ({
-              id: result.id || Date.now().toString(), // Provide a fallback ID
-              name: result.name || 'Unknown Place', // Provide a default name if missing
-              address: result.address || 'Unknown Address', // Provide a default address if missing
-              lat: result.lat || 0, // Provide a default lat if missing
-              lng: result.lng || 0, // Provide a default lng if missing
-              country: result.country || 'Unknown Country', // Provide a default country if missing
-              continent: result.continent || 'Unknown Continent', // Provide a default continent if missing
-              // isFavorite is not part of Place type, so we don't include it here
-            }));
-            */
             // XMOREJON Modified Version to handle CATALUNYA:
             const validResults: Place[] = results.map(result => {
               // First, create a base place object with default values

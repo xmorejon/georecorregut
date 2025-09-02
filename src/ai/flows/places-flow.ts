@@ -87,16 +87,22 @@ export const searchPlacesByTextFlow = ai.defineFlow(
       const results: Place[] = await Promise.all(data.places.map(async (place: any) => {
 
         const countryComponent = place.addressComponents?.find((c: any) => c.types.includes('country'));
-        const countryName = countryComponent?.longText || 'Unknown';
+        let countryName = countryComponent?.longText || 'Unknown';
         const countryCode = countryComponent?.shortText || '';
         const continentName = await getContinent(countryCode);
         
-        // CATALUNYA HANDLING
+        // Handle CATALUNYA
         if (countryName === 'Spain') {
-          console.log(`Geocoding Spain for ${place.displayName.text}, ${place.address_components}: Check if Catalunya.`);
-        }
-        console.log(`Geocoding Search for ${place.displayName.text}, ${place.address_components}: Check if Catalunya.`);
+                
+          if (place.formattedAddress.toLowerCase().includes('barcelona') || place.formattedAddress.toLowerCase().includes('tarragona') || 
+              place.formattedAddress.toLowerCase().includes('lleida') || place.formattedAddress.toLowerCase().includes('girona')) {
 
+            countryName = 'Catalunya';
+            place.formattedAddress = place.formattedAddress.replace(/Spain/gi, 'Catalunya');
+            console.log(`Addlocation into database set Catalunya for City: ${place.name} Address: ${place.address}`);
+          }
+        }
+        // end handle CATALUNYA
         return {
             id: place.id,
             name: place.displayName.text,
@@ -144,7 +150,7 @@ export async function geocodeCityCountry(city: string, country: string): Promise
 
       // Extract country and continent from address components
       const countryComponent = result.address_components?.find((c: any) => c.types.includes('country'));
-      const countryName = countryComponent?.long_name || 'Unknown';
+      let countryName = countryComponent?.long_name || 'Unknown';
       const countryCode = countryComponent?.short_name || '';
       const continentName = await getContinent(countryCode);
 
@@ -153,10 +159,18 @@ export async function geocodeCityCountry(city: string, country: string): Promise
       const cityComponent = result.address_components?.find((c: any) => c.types.includes('locality') || c.types.includes('political'));
       const cityName = cityComponent?.long_name || city; // Use provided city if API doesn't return a clear locality
       
-      // CATALUNYA HANDLING
+      // Handle CATALUNYA
       if (countryName === 'Spain') {
-        console.log(`Geocoding Spain for ${city}, ${result.address_components}: Check if Catalunya.`);
+                
+        if (result.formatted_address.toLowerCase().includes('barcelona') || result.formatted_address.toLowerCase().includes('tarragona') || 
+        result.formatted_address.toLowerCase().includes('lleida') || result.formatted_address.toLowerCase().includes('girona')) {
+
+          countryName = 'Catalunya';
+          result.formatted_address = result.formatted_address.replace(/Spain/gi, 'Catalunya');
+          console.log(`Addlocation into database set Catalunya for City: ${cityName} Address: ${result.formatted_address}`);
+        }
       }
+      // end handle CATALUNYA
 
       return {
         id: result.place_id || Date.now().toString(), // Use place_id or generate
