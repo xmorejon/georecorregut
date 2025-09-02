@@ -43,8 +43,8 @@ export default function InteractiveMap() {
       id: 'visited-countries',
       data: visitedCountries,
       strokeWeight: 1,
-    fillColor: '#FF7F7F', // Using the primary color for visited countries
-    fillOpacity: 0.5,
+      fillColor: '#FF7F7F', // Using the primary color for visited countries
+      fillOpacity: 0.5,
     };
   }, [visitedCountries]);
 
@@ -67,8 +67,14 @@ export default function InteractiveMap() {
   }, [selectedLocation]);
 
   useEffect(() => {
-    setShowGeoJsonLayer(!!countriesGeoJSON && !!visitedCountries);
-  }, [countriesGeoJSON, visitedCountries]);
+    const shouldShow = !!countriesGeoJSON && !!visitedCountries && visitedCountries.features && visitedCountries.features.length > 0;
+
+    // Only update state if the value is actually changing
+    if (shouldShow !== showGeoJsonLayer) {
+      setShowGeoJsonLayer(!!countriesGeoJSON && !!visitedCountries && visitedCountries.features && visitedCountries.features.length > 0);
+    }
+
+  }, [countriesGeoJSON, visitedCountries,showGeoJsonLayer]);
 
   const sortedLocations = useMemo(() => {
     if (!locations) return [];
@@ -80,8 +86,8 @@ export default function InteractiveMap() {
   }, [locations]);
 
   const { theme } = useTheme();
-  useEffect(() => { console.log('InteractiveMap - theme changed:', theme); }, [theme]);
   const mapColorScheme = theme === 'dark' ? 'dark' : 'light';
+  
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
       <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1 }}>
@@ -109,7 +115,7 @@ export default function InteractiveMap() {
         </div>
       </div>
       <Map
-        key={theme} // Add the theme as the key
+        //key={theme} // Removed due to unnecessary repaining but XMB-TODO check that THeme change is correct
         center={mapCenter}
         zoom={zoom}
         gestureHandling={'greedy'}
@@ -139,9 +145,11 @@ export default function InteractiveMap() {
                 />
             </AdvancedMarker>
           ))}
-        {showGeoJsonLayer && (
-            <GeoJsonLayer key={visitedCountries?.features.length} data={countryLayerOptions.data} options={countryLayerOptions} />
-        )}
+        <GeoJsonLayer 
+          data={countryLayerOptions.data} 
+          options={countryLayerOptions}
+          showLayer={showGeoJsonLayer} 
+        />
       </Map>
     </div>
   );

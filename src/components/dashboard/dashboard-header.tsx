@@ -135,26 +135,26 @@ export default function DashboardHeader() {
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
             </DropdownMenuSub>
- <AlertDialog>
- <AlertDialogTrigger asChild>
- <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
- <User className="mr-2 h-4 w-4" />
- <span>{t('delprofile')}</span>
- </DropdownMenuItem>
- </AlertDialogTrigger>
- <AlertDialogContent>
- <AlertDialogHeader>
- <AlertDialogTitle>{t('confirmDelAccount')}</AlertDialogTitle>
- <AlertDialogDescription>
- {t('confirmDelAccountDesc')}
- </AlertDialogDescription>
- </AlertDialogHeader>
- <AlertDialogFooter>
- <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
- <AlertDialogAction onClick={handleDelUser}>{t('continue')}</AlertDialogAction>
- </AlertDialogFooter>
- </AlertDialogContent>
- </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>{t('delprofile')}</span>
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('confirmDelAccount')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('confirmDelAccountDesc')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelUser}>{t('continue')}</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
