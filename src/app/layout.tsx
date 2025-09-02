@@ -14,7 +14,6 @@ export default function RootLayout({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  console.log('Rendering LayoutContent');
 
   return (
     <html lang="en" suppressHydrationWarning>

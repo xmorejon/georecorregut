@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Logo } from '@/components/icons/logo';
+import TravelFavicon from '@/components/icons/travel-favicon';
 import { useAppContext } from '@/contexts/app-context';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -87,7 +87,7 @@ export function LoginForm() {
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 h-16 w-16">
-          <Logo />
+          <TravelFavicon size={64} className="mr-2" />
         </div>
         <CardTitle className="font-headline text-2xl">{t('loginTitle')}</CardTitle>
         <CardDescription>{t('loginSubtitle')}</CardDescription>
