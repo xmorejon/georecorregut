@@ -95,3 +95,20 @@ This document covers common issues and solutions encountered during the developm
         ```
     3.  Your frontend can now call this endpoint (e.g., `/api/places`) using `fetch`.
 
+### 4. **Fix in the Publish firbase studio button **
+
+- **Symptom:** I cannot publish application (pre-production) with publish button
+
+- **Cause:** wrong apphosting.yaml file + missing permissions to Secrets.
+
+- **Solution:** Create a apphosting.yaml file.
+    1.  Create a file with the corresponding secrets. Examples
+        '''
+          - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+          secret: projects/591461101049/secrets/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY/versions/1
+        '''
+    2.  Gran access in terminal with the firebase service user:
+        firebase apphosting:secrets:grantaccess GOOGLE_API_KEY --emails firebase-app-hosting-compute@georecorregut.iam.gserviceaccount.com --project georecorregut --location us-central1
+    3.  Call manually command
+        firebase deploy --only apphosting
+        (To deploy in production do it with correspondinb button in the left Firebase pannel)
