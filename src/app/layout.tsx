@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import { useAppContext } from '@/contexts/app-context';
+import { useEffect } from 'react'; // Import useEffect
 
 export default function RootLayout({
  children,
@@ -14,6 +15,21 @@ export default function RootLayout({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
+
+  useEffect(() => {
+    // Check if service workers are supported
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js') // Register your service worker file
+          .then((registration) => {
+            console.log('Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+  }, []); // Empty dependency array means this effect runs once after the initial render
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -31,4 +47,3 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     </html>
  );
 }
-
