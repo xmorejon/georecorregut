@@ -66,7 +66,7 @@ export const translations: Translations = {
     close: "Tancar",
     noVisitedCountries: "0 països visitats!",
     you: " (tu)",
-    totalPoints: "Punts totals:"
+    totalPoints: "Punts totals"
   },
   es: {
     appName: 'GeoRecorrido',
@@ -131,7 +131,7 @@ export const translations: Translations = {
     close: "Cerrar",
     noVisitedCountries: "0 paises visitados!",
     you: " (tu)",
-    totalPoints: "Puntos en total:"
+    totalPoints: "Puntos en total"
   },
   en: {
     appName: 'GeoJourney',
@@ -193,9 +193,9 @@ export const translations: Translations = {
     totalPointsSuffix: ")",
     detail: "Detail",
     close: "Close",
-    noVisitedCountries: "no coutries visited!",
+    noVisitedCountries: "no countries visited!",
     you: " (yo)",
-    totalPoints: "Total points:"
+    totalPoints: "Total points"
   },
 };
 
