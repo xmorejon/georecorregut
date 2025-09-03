@@ -17,12 +17,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import TravelFavicon from '@/components/icons/travel-favicon';
-import { useAppContext } from '@/contexts/app-context';
+import { useAppContext } from '@/contexts/app-context'; // Import useAppContext
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, UserCredential, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { GoogleIcon } from '@/components/icons/google-icon';
+import { useEffect } from 'react'; // Import useEffect
+
 
 const formSchema = z.object({
   // Updated name schema to be optional for Google Sign-In
@@ -31,11 +33,15 @@ const formSchema = z.object({
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
-export function SignupForm() {
+// Rename SignupForm to default export for consistency with Next.js App Router pages
+export default function SignupForm() {
   console.log('SignupForm component rendered');
   const router = useRouter();
   const { t } = useAppContext();
   const { toast } = useToast();
+  // Get signInAnonymously, user, and loading from appContext
+  const { signInAnonymously, user, loading: appLoading } = useAppContext();
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,6 +51,13 @@ export function SignupForm() {
       password: '',
     },
   });
+
+  // Redirect if user is already logged in (anonymous or registered)
+  useEffect(() => {
+    if (user && !appLoading) {
+      router.push('/'); // Redirect to dashboard
+    }
+  }, [user, appLoading, router]); // Added dependencies
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -58,14 +71,14 @@ export function SignupForm() {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name: values.name,
         email: values.email,
- themePreference: 'system', // Set default theme preference on creation
+        themePreference: 'system', // Set default theme preference on creation
       });
-      router.push('/');
+      // Redirect is handled by the useEffect based on user state change
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Signup Failed',
-        description: error.message,
+        title: t('signupFailed'), // Assuming translated strings
+        description: error.message || t('signupError'), // Assuming translated strings and error handling
       });
     }
   }
@@ -74,33 +87,28 @@ export function SignupForm() {
     console.log('handleGoogleSignIn called');
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider)
-        .then(async (result) => {
-          const user = result.user; // The signed-in user info.
+      const result = await signInWithPopup(auth, provider)
 
-          console.log('After signInWithPopup. User:', user);
+      const user = result.user; // The signed-in user info.
 
-          try {
-            // Update the user's profile to include the display name from Google if available and not already set
-            if (user.displayName) {
-              await updateProfile(user, { displayName: user.displayName });
-            }
+      console.log('After signInWithPopup. User:', user);
 
-            console.log('After updateProfile.');
+      // Update the user's profile to include the display name from Google if available and not already set
+      if (user.displayName) {
+        await updateProfile(user, { displayName: user.displayName });
+      }
 
-            // Create or update a document in the 'users' collection with the user's UID as the document ID
-            await setDoc(doc(db, 'users', user.uid), {
-              name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
-              email: user.email || '', // Use email from Google, or empty string if null/undefined
- themePreference: 'system', // Set default theme preference on creation
-            });
+      console.log('After updateProfile.');
 
-            console.log('After setDoc.');
-            router.push('/');
-          } catch (firestoreError: any) {
-            console.error('Error saving user data to Firestore:', firestoreError);
-          }
-        });
+      // Create or update a document in the 'users' collection with the user's UID as the document ID
+      await setDoc(doc(db, 'users', user.uid), {
+        name: user.displayName || '', // Use displayName from Google, or empty string if null/undefined
+        email: user.email || '', // Use email from Google, or empty string if null/undefined
+        themePreference: 'system', // Set default theme preference on creation
+      });
+
+      console.log('After setDoc.');
+      // Redirect is handled by the useEffect based on user state change
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -109,6 +117,13 @@ export function SignupForm() {
       });
     }
   }
+
+   // Handle click for Anonymous Sign-In
+  const handleAnonymousClick = () => {
+    signInAnonymously();
+    // Redirect is handled by the useEffect based on user state change
+  };
+
 
   return (
     <Card className="w-full max-w-sm">
@@ -127,9 +142,9 @@ export function SignupForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t('signupName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Name" {...field} />
+                    <Input placeholder={t('signupNamePlaceholder')} {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -147,7 +162,6 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="password"
@@ -161,7 +175,7 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || appLoading}>
               {form.formState.isSubmitting ? 'Signing up...' : t('signup')}
             </Button>
           </form>
@@ -172,14 +186,18 @@ export function SignupForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
+              {t('signupContinue')}
             </span>
           </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+        <Button variant="outline" className="w-full" onClick={handleAnonymousClick} disabled={appLoading}>
+          {t('signupAnonymously')}
+        </Button>
+        <Button variant="outline" className="w-full mt-2" onClick={handleGoogleSignIn} disabled={appLoading}>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
+
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('haveAccount')}{' '}
           <Link href="/login" className="font-semibold text-primary hover:underline">
