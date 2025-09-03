@@ -195,12 +195,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
     try {
         await deleteDoc(doc(db, 'users', user.uid, 'locations', id));
+        // *** Update local state after successful deletion ***
+        setLocations(prevLocations => prevLocations.filter(location => location.id !== id));
         toast({ title: 'Location Removed', description: 'The location has been removed from your list.'});
     } catch (error) {
         console.error("Error deleting location: ", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to remove location.' });
     }
-  }, [user, toast]);
+  }, [user, toast, setLocations]);
 
   const toggleFavoriteStatus = useCallback(async (id: string, isFavorite: boolean) => {
     if (!user) {
@@ -298,8 +300,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     
                   place.country = 'Catalunya';
                   place.address = place.address.replace(/Spain/gi, 'Catalunya');
-                  console.log(`Geocoding set Catalunya for City: ${place.name} Address: ${place.address}`);
+                  console.log(`Geocoding set Catalunya for City: ${place.name} Address: ${results}`);
                 }
+              }
+
+              if (place.country === 'Unknown') {
+                console.log(`Geocoding Unknown country for ${place.name}, Result:${place.address}!`);
               }
               // Return the (potentially transformed) place object add add it to the validResults array
               return place;

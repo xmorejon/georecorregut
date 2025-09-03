@@ -103,6 +103,9 @@ export const searchPlacesByTextFlow = ai.defineFlow(
           }
         }
         // end handle CATALUNYA
+        if (countryName === 'Unknown') {
+          console.log(`searchPlacesByTextFlow: Geocoding Unknown country for ${place.displayName.text}, ${place.formattedAddress}!`);
+        }
         return {
             id: place.id,
             name: place.displayName.text,

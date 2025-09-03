@@ -45,7 +45,7 @@ const GeoJsonLayer: React.FC<GeoJsonLayerProps> = ({ data, options, showLayer })
 
     // Clear existing features from the data layer
     dataLayer.forEach((feature) => {
-      console.error("Clearing current feature:", feature.getProperty("name"));
+      //console.error("Clearing current feature:", feature.getProperty("name"));
       dataLayer.remove(feature);
     });
 
