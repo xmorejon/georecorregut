@@ -33,7 +33,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 export default function DashboardHeader() {
   const { isMobile } = useSidebar(); // Assuming useSidebar provides isMobile
   const { theme, setTheme } = useTheme(); // Get theme and setTheme from next-themes
-  const { t, language, setLanguage, user } = useAppContext();
+  const { t, language, setLanguage, user, logout } = useAppContext();
   const router = useRouter();
 
   const handleLanguageChange = (lang: string) => {
@@ -64,12 +64,7 @@ export default function DashboardHeader() {
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    await logout(); // Call the logout function from the context
   };
 
   const handleThemeChange = async (theme: string) => { // Make async

@@ -1,11 +1,14 @@
+// In src/contexts/app-context.tsx
+
 'use client';
 
 import { useEffect, useState, useContext, createContext, useMemo, useCallback } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, collection, query, orderBy, onSnapshot, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { signInAnonymously, User } from 'firebase/auth'; // Import signInAnonymously and User type
+import { signInAnonymously, User, signOut } from 'firebase/auth'; // Import signInAnonymously, User, and signOut
 import { auth, db, getAllUsersUniqueLocationsData } from '@/lib/firebase'; // Your Firebase instances
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast'; // Assuming useToast is in this path
+import { useRouter } from 'next/navigation'; // Import useRouter for redirection after logout
 
 
 // Assuming your types are defined in '@/lib/types'
@@ -18,7 +21,7 @@ interface AppContextType {
   locations: Location[];
   filteredLocations: Location[];
   addPlaceAsLocation: (place: Place, callback?: () => void) => void;
-  deleteLocation: (id: string) => Promise<void>; // Changed return type to Promise<void>
+  deleteLocation: (id: string) => Promise<void>;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   selectedLocation: Location | null;
@@ -27,8 +30,8 @@ interface AppContextType {
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
   user: User | null | undefined; // User can be null (logged out), undefined (loading), or a User object
-  loading: boolean; // Renamed from authLoading for clarity with useAuthState
-  error: any; // Include error from useAuthState
+  loading: boolean; // From useAuthState
+  error: any; // From useAuthState
   placeSearchResults: Place[];
   isSearchingPlaces: boolean;
   previewPlace: (place: Place) => void;
@@ -39,93 +42,82 @@ interface AppContextType {
     placeId?: string,
     callback?: () => void,
     showToast?: boolean
-  ) => Promise<void>; // Changed return type to Promise<void>
-  handleImportJSON: (file: File) => Promise<void>; // Changed return type to Promise<void>
-  toggleFavoriteStatus: (id: string, isFavorite: boolean) => Promise<void>; // Changed return type to Promise<void>
+  ) => Promise<void>;
+  handleImportJSON: (file: File) => Promise<void>;
+  toggleFavoriteStatus: (id: string, isFavorite: boolean) => Promise<void>;
   allUsersUniqueLocations: { [key: string]: { userName: string; countries: string[]; continents: string[] } };
-  userThemePreference: UserData['themePreference'] | undefined; // Allow undefined for initial loading or anonymous
-  signInAnonymously: () => Promise<void>; // Function to sign in anonymously
+  userThemePreference: UserData['themePreference'] | undefined;
+  signInAnonymously: () => Promise<void>; // Function to sign in anonymously via button
+  isSavingAnonymousData: boolean; // Expose saving state
+  logout: () => Promise<void>; // Expose logout function
 }
 
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Define a constant for the anonymous local storage key
+const ANONYMOUS_LOCATIONS_STORAGE_KEY = 'anonymousTrialLocations';
+const ANONYMOUS_THEME_STORAGE_KEY = 'anonymousTrialThemePreference';
+
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [language, setLanguage] = useState<Language>('ca');
-  // Use useAuthState from react-firebase-hooks for comprehensive auth state management
+  const router = useRouter(); // Get router instance
   const [user, loading, error] = useAuthState(auth);
-  const [placeSearchResults, setPlaceSearchResults] = useState<Place[]>([]);
-  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('search');
-  const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { userName: string; countries: string[]; continents: string[] } }>({});
   const [locations, setLocations] = useState<Location[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [activeTab, setActiveTab] = useState('search'); // Assuming you manage tabs here
+  const [searchTerm, setSearchTerm] = useState(''); // Assuming you manage search term here
   // Initialize theme preference to undefined to indicate loading/not set
   const [userThemePreference, setUserThemePreference] = useState<UserData['themePreference'] | undefined>(undefined);
-
-
+  const [placeSearchResults, setPlaceSearchResults] = useState<Place[]>([] );
+  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
+  const { toast } = useToast();
+  const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { userName: string; countries: string[]; continents: string[] } }>({});
+  const [isSavingAnonymousData, setIsSavingAnonymousData] = useState(false); // State to track saving
+  const [language, setLanguage] = useState<Language>('ca'); // Moved language state here
   const t = useMemo(() => getTranslation(language), [language]);
+
+  // New state to track if the user has explicitly logged out
+  const [isExplicitlyLoggedOut, setIsExplicitlyLoggedOut] = useState(false);
+
 
   // Effect to handle user authentication state changes and load data
   useEffect(() => {
-    // Only proceed if the auth state is not loading
+    let unsubscribeLocations: (() => void) | undefined = undefined; // Initialize to undefined
+
     if (!loading) {
       if (user) {
-        if (user.isAnonymous) {
-          console.log("User is anonymous. Loading locations from local storage.");
-          // Load locations from local storage
-          // Use UID for uniqueness in local storage keys to support multiple anonymous users on the same device
-          const storedLocations = localStorage.getItem(`anonymousLocations_${user.uid}`);
-          if (storedLocations) {
-            try {
-              const parsedLocations: any[] = JSON.parse(storedLocations);
-              setLocations(parsedLocations.map(loc => ({
-                ...loc,
-                date: loc.date ? new Date(loc.date) : new Date(), // Convert timestamp string back to Date object, handle missing
-              })));
-            } catch (e) {
-              console.error("Error parsing local storage locations:", e);
-              setLocations([]); // Clear if corrupted
-            }
-          } else {
-            setLocations([]); // Initialize empty if nothing stored
-          }
-          // Load theme preference from local storage for anonymous users
-          const storedTheme = localStorage.getItem(`anonymousThemePreference_${user.uid}`);
-          setUserThemePreference((storedTheme as UserData['themePreference']) || 'system');
-
-
-        } else {
+        if (!user.isAnonymous) { // Registered user
           console.log("User is registered. Loading locations from Firestore.");
           // Existing logic to load from Firestore for registered users
           const locationsCollection = collection(db, 'users', user.uid, 'locations');
           const q = query(locationsCollection, orderBy('date', 'desc')); // Assuming 'date' is the field for ordering
 
-          const unsubscribeLocations = onSnapshot(q, (snapshot) => {
+          unsubscribeLocations = onSnapshot(q, (snapshot) => {
             const fetchedLocations: Location[] = snapshot.docs.map(doc => ({
               id: doc.id,
-              ...doc.data() as Omit<Location, 'id' | 'timestamp'>, // Cast data to Location type
-              timestamp: doc.data().date ? new Date(doc.data().date) : new Date() // Convert date string to Date object, handle missing
+              ...doc.data() as Omit<Location, 'id'>, // Cast data to Location type, Omit timestamp
+              date: doc.data().date, // Keep date as string from Firestore
             }));
+             console.log("Fetched locations from Firestore:", fetchedLocations);
             // Optional: Deep compare to avoid unnecessary state updates
              if (JSON.stringify(fetchedLocations) !== JSON.stringify(locations)) {
                setLocations(fetchedLocations);
             }
           }, (error) => {
-            console.error("Error fetching locations: ", error);
+            console.error("Error fetching locations from Firestore: ", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
           });
 
-          // Fetch user document and theme preference from Firestore
+          // Fetch user document and theme preference from Firestore for registered users
           const userDocRef = doc(db, 'users', user.uid);
           getDoc(userDocRef).then((docSnap) => {
             if (docSnap.exists()) {
               setUserThemePreference(docSnap.data().themePreference || 'system');
+               console.log("Fetched theme preference from Firestore:", docSnap.data().themePreference);
             } else {
               // Default or handle missing user document/theme preference
               setUserThemePreference('system');
+               console.log("User document not found, setting default theme preference.");
             }
           }).catch(error => {
             console.error("Error fetching user document/theme preference:", error);
@@ -133,53 +125,52 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           });
 
 
-          return () => unsubscribeLocations(); // Cleanup Firestore locations listener
+        } else { // Anonymous user (signed in, but not registered)
+             console.log("User is anonymous. Loading locations and theme from local storage.");
+             // Load locations from local storage for anonymous user
+              if (typeof window !== 'undefined') {
+                  const storedLocations = localStorage.getItem(ANONYMOUS_LOCATIONS_STORAGE_KEY);
+                  if (storedLocations) {
+                      try {
+                        const parsedLocations: any[] = JSON.parse(storedLocations);
+                        setLocations(parsedLocations.map(loc => ({
+                          ...loc,
+                           date: loc.date, // Keep date as string
+                          timestamp: loc.date ? new Date(loc.date) : new Date(), // Convert date string to Date object
+                        })));
+                         console.log("Loaded anonymous trial locations from local storage.");
+                      } catch (e) {
+                          console.error("Error parsing anonymous trial locations from local storage:", e);
+                           setLocations([]); // Clear if corrupted
+                      }
+                  } else {
+                       setLocations([]); // Initialize empty if no local data
+                       console.log("No anonymous trial locations found in local storage.");
+                  }
+
+                  // Load theme preference from local storage for anonymous user
+                  const storedTheme = localStorage.getItem(ANONYMOUS_THEME_STORAGE_KEY);
+                   setUserThemePreference((storedTheme as UserData['themePreference']) || 'system');
+                    console.log("Loaded anonymous theme preference from local storage.");
+              }
+          }
+      } else { // User logged out or no user initially
+         console.log("User logged out or no user. Clearing state.");
+         setLocations([]);
+         setSelectedLocation(null);
+         setUserThemePreference(undefined);
+      }
+    }
+
+     // Cleanup function for the effect
+     return () => {
+        // If unsubscribeLocations was set (for registered users), clean it up
+        if (unsubscribeLocations) {
+            unsubscribeLocations();
         }
-      } else {
-        console.log("User logged out or no user.");
-        // Clear locations and theme preference when user logs out or is initially not logged in
-        setLocations([]);
-        setSelectedLocation(null); // Clear selected location on logout
-        setUserThemePreference(undefined);
-        // Optionally clear anonymous data from local storage on explicit logout
-        // if (typeof window !== 'undefined') { // Check if in browser
-        //   localStorage.removeItem('anonymousLocations');
-        //   localStorage.removeItem('anonymousThemePreference');
-        // }
-      }
-    }
-  }, [user, loading, db, toast]); // Added loading to dependencies and db, toast for effects
+     };
 
-  // Effect to save locations to local storage for anonymous users
-  useEffect(() => {
-    // Ensure we are in the browser environment before accessing localStorage
-    if (typeof window !== 'undefined' && user && user.isAnonymous) {
-      console.log("Saving anonymous locations to local storage.");
-      // Use UID for uniqueness in local storage keys
-      if (locations.length > 0) {
-        localStorage.setItem(`anonymousLocations_${user.uid}`, JSON.stringify(locations));
-      } else {
-        // Clear local storage if the locations array becomes empty
-        localStorage.removeItem(`anonymousLocations_${user.uid}`);
-      }
-    }
-  }, [locations, user]); // Dependencies
-
-  // Effect to save theme preference locally for anonymous users
-  useEffect(() => {
-     // Ensure we are in the browser environment before accessing localStorage
-    if (typeof window !== 'undefined' && user && user.isAnonymous) {
-      console.log("Saving anonymous theme preference to local storage.");
-      // Use UID for uniqueness in local storage keys
-      if (userThemePreference !== undefined) {
-        localStorage.setItem(`anonymousThemePreference_${user.uid}`, userThemePreference);
-      } else {
-        // Clear local storage if theme preference becomes undefined
-        localStorage.removeItem(`anonymousThemePreference_${user.uid}`);
-      }
-    }
-  }, [userThemePreference, user]);
-
+  }, [user, loading, db, toast]); // Dependencies remain the same
 
   // Effect to fetch all users' unique location data (only for registered users)
   useEffect(() => {
@@ -193,28 +184,52 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Only fetch for registered users
-    if (user && !user.isAnonymous) {
+    // Only fetch for registered users and when auth is not loading
+    if (user && !user.isAnonymous && !loading) {
       fetchAllUsersData();
     } else {
       // Clear data if user is anonymous or logged out
       setAllUsersUniqueLocations({});
     }
- }, [user]); // Depend on user so it refetches/clears when auth state changes
+ }, [user, loading]); // Depend on user and loading
 
 
-  // Function to sign in anonymously
+  // Function to sign in anonymously explicitly (e.g., from a button)
+  // This is primarily used for the button click on login/signup pages
   const handleAnonymousSignIn = useCallback(async () => {
     try {
+      // If a user is already logged in (including anonymous), sign them out first
+      if (auth.currentUser) {
+         await auth.signOut();
+         console.log("Signed out existing user before anonymous sign-in via button.");
+      }
+      // Reset explicit logout state when attempting to sign in anonymously via button
+      setIsExplicitlyLoggedOut(false);
       await signInAnonymously(auth);
-      console.log("Signed in anonymously.");
+      console.log("Signed in anonymously via button.");
       toast({ title: 'Trial Mode', description: 'You are signed in anonymously. Your data will be saved locally on this device.' });
 
     } catch (error: any) {
-      console.error("Error signing in anonymously:", error);
+      console.error("Error signing in anonymously via button:", error);
       toast({ variant: 'destructive', title: 'Anonymous Sign-In Failed', description: error.message });
     }
-  }, [auth, toast]);
+  }, [auth, toast, setIsExplicitlyLoggedOut]);
+
+
+  // Function to handle user logout
+  const logout = useCallback(async () => {
+      try {
+          // Set the explicit logout state before signing out
+          setIsExplicitlyLoggedOut(true);
+          await signOut(auth);
+          console.log("User logged out.");
+          // Redirect to login page after logout
+          router.push('/login');
+      } catch (error: any) {
+          console.error("Error logging out:", error);
+          toast({ variant: 'destructive', title: 'Logout Failed', description: error.message });
+      }
+  }, [auth, toast, router, setIsExplicitlyLoggedOut]);
 
 
   // Add location function (handles both Firestore and Local Storage)
@@ -224,6 +239,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     callback?: () => void,
     showToast: boolean = true
   ) => {
+    // Check if user is available and NOT registered (trial mode)
+    const isTrialUser = user && user.isAnonymous;
+
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'User not authenticated.' });
       callback?.();
@@ -233,19 +251,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     // Generate an ID. Use placeId if provided, otherwise generate a new one.
     const locationId = placeId || Date.now().toString();
 
-
     const newLocation: Location = {
       id: locationId,
       name: details.name,
       lat: details.lat,
       lng: details.lng,
-      date: new Date().toISOString(), // Use Date object for timestamp
+      date: new Date().toISOString(), // Use 'date' property as ISO string
       country: details.country || 'Unknown',
       continent: details.continent || 'Unknown',
       isFavorite: details.isFavorite ?? false,
     };
 
-    if (user.isAnonymous) {
+    if (isTrialUser) {
       console.log("User is anonymous. Adding location to local storage state.");
       // Add to local storage state immutably
       setLocations(prevLocations => {
@@ -257,7 +274,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
               }
               return prevLocations; // Return previous state if duplicate
           }
-          return [...prevLocations, newLocation];
+          const updatedLocations = [...prevLocations, newLocation];
+          // *** Save to local storage immediately after updating state ***
+          if (typeof window !== 'undefined') {
+              localStorage.setItem(ANONYMOUS_LOCATIONS_STORAGE_KEY, JSON.stringify(updatedLocations));
+               console.log("Saved anonymous locations to local storage after adding.");
+          }
+          return updatedLocations;
       });
 
       if (showToast) {
@@ -265,16 +288,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
       callback?.(); // Call callback immediately for anonymous
 
-
-    } else {
+    } else { // Registered user
       console.log("User is registered. Adding location to Firestore.");
       // Existing logic to add to Firestore for registered users
       try {
         const locationsCollection = collection(db, 'users', user.uid, 'locations');
         // Use the generated ID for consistency. Firestore uses 'date' field for ordering.
+        // Ensure date is saved as string in Firestore
         await setDoc(doc(locationsCollection, newLocation.id), {
              ...newLocation,
-             date: newLocation.date.toString() // Save timestamp as ISO string in Firestore 'date' field
+             date: newLocation.date
         });
 
         if (showToast) {
@@ -310,17 +333,33 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Delete location function (handles both Firestore and Local Storage)
   const deleteLocation = useCallback(async (idToDelete: string) => {
+     // Check if user is available and NOT registered (trial mode)
+    const isTrialUser = user && user.isAnonymous;
+
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'User not authenticated.' });
       return;
     }
 
-    if (user.isAnonymous) {
+    if (isTrialUser) {
       console.log("User is anonymous. Deleting location from local storage state.");
       // Update local storage state by filtering immutably
-      setLocations(prevLocations => prevLocations.filter(location => location.id !== idToDelete));
+      setLocations(prevLocations => {
+         const updatedLocations = prevLocations.filter(location => location.id !== idToDelete);
+         // *** Save to local storage immediately after updating state ***
+         if (typeof window !== 'undefined') {
+             if (updatedLocations.length > 0) {
+                 localStorage.setItem(ANONYMOUS_LOCATIONS_STORAGE_KEY, JSON.stringify(updatedLocations));
+                  console.log("Saved anonymous locations to local storage after deleting.");
+             } else {
+                  localStorage.removeItem(ANONYMOUS_LOCATIONS_STORAGE_KEY);
+                   console.log("Cleared anonymous locations from local storage after deleting last item.");
+             }
+         }
+         return updatedLocations;
+      });
       toast({ title: 'Location Removed', description: 'The location has been removed from your trial list.'});
-    } else {
+    } else { // Registered user
       console.log("User is registered. Deleting location from Firestore.");
       // Existing logic to delete from Firestore for registered users
       try {
@@ -336,19 +375,30 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Update favorite status function (handles both Firestore and Local Storage)
   const toggleFavoriteStatus = useCallback(async (idToUpdate: string, isFavorite: boolean) => {
+     // Check if user is available and NOT registered (trial mode)
+    const isTrialUser = user && user.isAnonymous;
+
     if (!user) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: 'User not authenticated.' });
       return;
     }
 
-    if (user.isAnonymous) {
+    if (isTrialUser) {
       console.log("User is anonymous. Toggling favorite status in local storage state.");
       // Update local storage state immutably
-      setLocations(prevLocations => prevLocations.map(location =>
-        location.id === idToUpdate ? { ...location, isFavorite: isFavorite } : location
-      ));
+      setLocations(prevLocations => {
+         const updatedLocations = prevLocations.map(location =>
+            location.id === idToUpdate ? { ...location, isFavorite: isFavorite } : location
+         );
+         // *** Save to local storage immediately after updating state ***
+         if (typeof window !== 'undefined') {
+              localStorage.setItem(ANONYMOUS_LOCATIONS_STORAGE_KEY, JSON.stringify(updatedLocations));
+               console.log("Saved anonymous locations to local storage after updating favorite status.");
+         }
+         return updatedLocations;
+      });
       toast({ title: 'Location Updated', description: 'The location\'s favorite status has been updated in your trial list.' });
-    } else {
+    } else { // Registered user
       console.log("User is registered. Toggling favorite status in Firestore.");
       // Existing logic to update in Firestore
       try {
@@ -366,11 +416,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // handleImportJSON function (handles both Firestore and Local Storage)
   const handleImportJSON = useCallback(async (file: File) => {
+    // Check if user is available and NOT registered (trial mode)
+    const isTrialUser = user && user.isAnonymous;
+
     if (!user) {
        toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in or in trial mode to import locations.' });
        return;
     }
 
+    if (!isTrialUser) {
+        // If not a trial user, perform Firestore import (existing logic)
+         console.log("User is registered. Importing locations to Firestore.");
+         // You'll need to add the actual Firestore import logic here
+         // It might involve reading the JSON and then using addLocation for each item
+         // For now, just show a message or keep your existing Firestore import logic if it's separate
+         toast({ title: 'Import', description: 'Import to Firestore is not yet fully implemented in this function.'});
+         return;
+    }
+
+
+    console.log("User is anonymous. Importing locations to local storage.");
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
@@ -382,38 +447,64 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         let importedCount = 0;
+        const importedLocations: Location[] = []; // Collect imported locations
+
         for (const location of json) {
           // Basic validation for essential properties
           if (location.name && typeof location.lat === 'number' && typeof location.lng === 'number') {
-            // Use the addLocation function which handles both anonymous and registered users
-            await addLocation({
-              name: location.name,
-              lat: location.lat,
-              lng: location.lng,
-              country: location.country || 'Unknown',
-              continent: location.continent || 'Unknown',
-              isFavorite: location.isFavorite ?? false,
-             }, location.id, undefined, false); // Pass existing ID and suppress toast for individual additions
-            importedCount++;
+              const newLocation: Location = {
+                  id: location.id || Date.now().toString() + importedCount, // Generate ID if missing, ensure uniqueness for imports
+                  name: location.name,
+                  lat: location.lat,
+                  lng: location.lng,
+                  date: location.date || new Date().toISOString(), // Use existing date or generate
+                  country: location.country || 'Unknown',
+                  continent: location.continent || 'Unknown',
+                  isFavorite: location.isFavorite ?? false,
+              };
+               // Prevent adding duplicates based on ID in local storage during import
+              if (!locations.some(loc => loc.id === newLocation.id) && !importedLocations.some(loc => loc.id === newLocation.id)) {
+                 importedLocations.push(newLocation);
+                 importedCount++;
+              } else {
+                 console.warn(`Skipping adding duplicate or invalid location data during import:`, location);
+              }
           } else {
-            console.warn('Skipping invalid location data:', location);
+            console.warn('Skipping invalid location data during import:', location);
           }
         }
+
+        // *** Update local storage state with all imported locations at once ***
+         setLocations(prevLocations => {
+            const updatedLocations = [...prevLocations, ...importedLocations];
+             if (typeof window !== 'undefined') {
+                  if (updatedLocations.length > 0) {
+                      localStorage.setItem(ANONYMOUS_LOCATIONS_STORAGE_KEY, JSON.stringify(updatedLocations));
+                       console.log("Saved anonymous locations to local storage after importing.");
+                  } else {
+                       localStorage.removeItem(ANONYMOUS_LOCATIONS_STORAGE_KEY);
+                        console.log("Cleared anonymous locations from local storage after importing (resulted in empty).");
+                  }
+             }
+            return updatedLocations;
+         });
+
         toast({ title: 'Import Successful', description: `${importedCount} locations imported.` });
+
       } catch (error) {
         console.error('Error importing locations:', error);
         toast({ variant: 'destructive', title: 'Import Error', description: 'Failed to import locations. Please check the file format.' });
       }
     };
     reader.readAsText(file);
-  }, [user, addLocation, toast]); // Added user, addLocation, toast to dependencies
+  }, [user, locations, toast, setLocations]); // Added user, locations, toast, setLocations to dependencies
 
 
   const previewPlace = useCallback((place: Place) => {
     setSelectedLocation({
       ...place,
-      id: place.id || Date().toString(), // Ensure preview place has an ID
-      date: new Date().toString(), // Add a default timestamp
+      id: place.id || Date.now().toString(), // Ensure preview place has an ID
+      date: new Date().toISOString(), // Use 'date' property as ISO string
       isFavorite: false, // Default to false for preview
     });
   }, []);
@@ -491,7 +582,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Memoize the context value to prevent new object references on every render
   const contextValue = useMemo(() => ({
     locations,
-    filteredLocations, // Include filteredLocations
+    filteredLocations,
     selectedLocation,
     setSelectedLocation,
     activeTab,
@@ -500,35 +591,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setSearchTerm,
     deleteLocation,
     addLocation,
-    toggleFavoriteStatus, // Include toggleFavoriteStatus
-    handleImportJSON, // Include handleImportJSON
-    addPlaceAsLocation, // Include addPlaceAsLocation
-    previewPlace, // Include previewPlace
-    language, // Include language
-    setLanguage, // Include setLanguage
-    t, // Include t
-    user, // Include user
-    loading, // Include loading (from useAuthState)
-    error, // Include error (from useAuthState)
-    placeSearchResults, // Include placeSearchResults
-    isSearchingPlaces, // Include isSearchingPlaces
-    allUsersUniqueLocations, // Include allUsersUniqueLocations
-    userThemePreference, // Include userThemePreference
-    signInAnonymously: handleAnonymousSignIn, // Expose the anonymous sign-in function
-  }), [
-    locations,
-    filteredLocations, // Add filteredLocations dependency
-    selectedLocation,
-    activeTab,
-    setActiveTab,
-    searchTerm,
-    setSearchTerm,
-    deleteLocation,
-    addLocation,
-    toggleFavoriteStatus, // Add toggleFavoriteStatus dependency
-    handleImportJSON, // Add handleImportJSON dependency
-    addPlaceAsLocation, // Add addPlaceAsLocation dependency
-    previewPlace, // Add previewPlace dependency
+    toggleFavoriteStatus,
+    handleImportJSON,
+    addPlaceAsLocation,
+    previewPlace,
     language,
     setLanguage,
     t,
@@ -537,10 +603,39 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     error,
     placeSearchResults,
     isSearchingPlaces,
-    allUsersUniqueLocations, // Add allUsersUniqueLocations dependency
+    allUsersUniqueLocations,
+    userThemePreference,
+    signInAnonymously: handleAnonymousSignIn, // Expose the anonymous sign-in function
+    isSavingAnonymousData, // Expose saving state
+    logout, // Include logout function in the context value
+  }), [
+    locations,
+    filteredLocations,
+    selectedLocation,
+    activeTab,
+    setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    deleteLocation,
+    addLocation,
+    toggleFavoriteStatus,
+    handleImportJSON,
+    addPlaceAsLocation,
+    previewPlace,
+    language,
+    setLanguage,
+    t,
+    user,
+    loading,
+    error,
+    placeSearchResults,
+    isSearchingPlaces,
+    allUsersUniqueLocations,
     userThemePreference,
     handleAnonymousSignIn,
-  ]); // Add all dependencies
+    isSavingAnonymousData,
+    logout, // Add logout dependency
+  ]);
 
 
   return (
