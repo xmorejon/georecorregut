@@ -36,18 +36,16 @@ const GeoJsonLayer: React.FC<GeoJsonLayerProps> = ({ data, options, showLayer })
 
   useEffect(() => {
 
-    console.log("GeoJsonLayer data dependency changed:", data);
-
     if (!dataLayerRef.current || !data){
-      console.warn("Skipping data update: dataLayerRef.current or data is null.");
       return;
     }
+    console.log("GeoJsonLayer data dependency changed!");
 
     const dataLayer = dataLayerRef.current;
 
     // Clear existing features from the data layer
     dataLayer.forEach((feature) => {
-      console.error("Clearing current feature:", feature.getProperty.name);
+      console.error("Clearing current feature:", feature.getProperty("name"));
       dataLayer.remove(feature);
     });
 
@@ -55,24 +53,16 @@ const GeoJsonLayer: React.FC<GeoJsonLayerProps> = ({ data, options, showLayer })
       // Add the new GeoJSON data to the existing layer
       try {
           dataLayer.addGeoJson(data);
-          console.log("Successfully added new GeoJSON data.");
-
-          // Log the number of features in the data layer after adding
-          let featureCount = 0;
-          dataLayer.forEach(() => {
-            featureCount++;
-          });
-          console.log("Features in data layer after adding:", featureCount);
+          console.log("Successfully added new GeoJSON data:", data);
 
       } catch (error) {
           console.error("Error adding GeoJSON data:", error);
           // Handle the error, maybe log or display a message
       }
     } else {
-      console.log("showLayer is false or data is null, not adding GeoJSON data.");
+      //console.log("showLayer is false or data is null, not adding GeoJSON data.");
       // If showLayer is false, the layer is already cleared above.
-  }
-
+    }
   }, [data, showLayer]); // Depend on the data
 
   useEffect(() => {
