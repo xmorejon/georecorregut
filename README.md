@@ -13,3 +13,8 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="**KEY**"
 NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID="**KEY**"
 GEMINI_API_KEY="**KEY**"
 GOOGLE_API_KEY="**KEY**"
+
+To publish the app (as Publish button fails)
+npm run build
+firebase deploy --only apphosting
+I have not managed to be able to install it out of us-central1 even if I tried europe-west4

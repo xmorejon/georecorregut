@@ -1,6 +1,6 @@
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
-# location: europe-west1 Location is ignored, Publish does it default in us-central1
+location: europe-west4
 runConfig:
   minInstances: 0
   # maxInstances: 100
@@ -22,11 +22,15 @@ env:
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   # - variable: MY_SECRET
   #   secret: mySecretRef
-    - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      secret: projects/591461101049/secrets/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY/versions/1
-    - variable: NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
-      secret: projects/591461101049/secrets/NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID/versions/1
-    - variable: GEMINI_API_KEY 
-      secret: projects/591461101049/secrets/GEMINI_API_KEY/versions/1
-    - variable: GOOGLE_API_KEY 
-      secret: projects/591461101049/secrets/GOOGLE_API_KEY/versions/1
+  # Backend-facing API Key (recommended for server-side use)
+  - variable: SERVER_SIDE_GOOGLE_MAPS_API_KEY # Use a distinct variable name for your server-side key
+    secret: projects/591461101049/secrets/SERVER_SIDE_GOOGLE_MAPS_API_KEY/versions/1
+  # Other secrets as needed
+  - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    secret: projects/591461101049/secrets/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY/versions/1
+  - variable: NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+    secret: projects/591461101049/secrets/NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID/versions/1
+  - variable: GEMINI_API_KEY 
+    secret: projects/591461101049/secrets/GEMINI_API_KEY/versions/1
+  - variable: GOOGLE_API_KEY 
+    secret: projects/591461101049/secrets/GOOGLE_API_KEY/versions/1
