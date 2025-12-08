@@ -50,7 +50,7 @@ export const searchPlacesByTextFlow = ai.defineFlow(
     outputSchema: PlacesSearchOutputSchema,
   },
   async (input) => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.SERVER_SIDE_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       throw new Error('Google Maps API key is not configured.');
     }
@@ -128,7 +128,7 @@ export const searchPlacesByTextFlow = ai.defineFlow(
 
 // New function to geocode a city and country
 export async function geocodeCityCountry(city: string, country: string): Promise<Omit<Place, 'visited_at' | 'notes' | 'photo_url'> | null> {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.SERVER_SIDE_GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
     console.error('Google Maps API key is not configured.');
     return null;
