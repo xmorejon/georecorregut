@@ -7,9 +7,22 @@ import GeoJsonLayer from '../map/geojson-layer';
 import { useTheme } from 'next-themes';
 import { useAppContext } from '@/contexts/app-context';
 
+interface GeoJSONFeature {
+  properties: {
+    name: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface GeoJSONData {
+  features: GeoJSONFeature[];
+  [key: string]: unknown;
+}
+
 export default function InteractiveMap() {
   const { locations, selectedLocation, setSelectedLocation, activeTab, setSearchTerm } = useAppContext();
-  const [countriesGeoJSON, setCountriesGeoJSON] = useState<any>(null);
+  const [countriesGeoJSON, setCountriesGeoJSON] = useState<GeoJSONData | null>(null);
   const favoritePinColor = {
     background: 'hsl(var(--destructive))',
     borderColor: 'hsl(var(--destructive-foreground))',
@@ -31,7 +44,7 @@ export default function InteractiveMap() {
 
     return {
       type: 'FeatureCollection',
-      features: countriesGeoJSON.features.filter((feature: any) => {
+      features: countriesGeoJSON.features.filter((feature: GeoJSONFeature) => {
           return visitedCountryNames.has(feature.properties.name.toLowerCase()); // Assuming the country name property is 'name'
         }
       ),
