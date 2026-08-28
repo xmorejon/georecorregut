@@ -72,12 +72,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const { toast } = useToast();
   const [allUsersUniqueLocations, setAllUsersUniqueLocations] = useState<{ [key: string]: { userName: string; countries: string[]; continents: string[] } }>({});
-  const [isSavingAnonymousData, setIsSavingAnonymousData] = useState(false); // State to track saving
+  const [isSavingAnonymousData] = useState(false); // State to track saving
   const [language, setLanguage] = useState<Language>('ca'); // Moved language state here
   const t = useMemo(() => getTranslation(language), [language]);
-
-  // New state to track if the user has explicitly logged out
-  const [isExplicitlyLoggedOut, setIsExplicitlyLoggedOut] = useState(false);
 
 
   // Effect to handle user authentication state changes and load data
@@ -100,9 +97,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             }));
              console.log("Fetched locations from Firestore:", fetchedLocations);
             // Optional: Deep compare to avoid unnecessary state updates
-             if (JSON.stringify(fetchedLocations) !== JSON.stringify(locations)) {
-               setLocations(fetchedLocations);
-            }
+            setLocations(prevLocations => {
+              if (JSON.stringify(fetchedLocations) !== JSON.stringify(prevLocations)) {
+                return fetchedLocations;
+              }
+              return prevLocations;
+            });
           }, (error) => {
             console.error("Error fetching locations from Firestore: ", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to load locations.' });
@@ -170,7 +170,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         }
      };
 
-  }, [user, loading, db, toast]); // Dependencies remain the same
+  }, [user, loading, toast]); // Removed db and locations from dependencies
 
   // Effect to fetch all users' unique location data (only for registered users)
   useEffect(() => {
@@ -203,8 +203,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
          await auth.signOut();
          console.log("Signed out existing user before anonymous sign-in via button.");
       }
-      // Reset explicit logout state when attempting to sign in anonymously via button
-      setIsExplicitlyLoggedOut(false);
       await signInAnonymously(auth);
       console.log("Signed in anonymously via button.");
       toast({ title: 'Trial Mode', description: 'You are signed in anonymously. Your data will be saved locally on this device.' });
@@ -213,14 +211,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error signing in anonymously via button:", error);
       toast({ variant: 'destructive', title: 'Anonymous Sign-In Failed', description: error.message });
     }
-  }, [auth, toast, setIsExplicitlyLoggedOut]);
+  }, [toast]);
 
 
   // Function to handle user logout
   const logout = useCallback(async () => {
       try {
-          // Set the explicit logout state before signing out
-          setIsExplicitlyLoggedOut(true);
           await signOut(auth);
           console.log("User logged out.");
           // Redirect to login page after logout
@@ -229,7 +225,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("Error logging out:", error);
           toast({ variant: 'destructive', title: 'Logout Failed', description: error.message });
       }
-  }, [auth, toast, router, setIsExplicitlyLoggedOut]);
+  }, [toast, router]);
 
 
   // Add location function (handles both Firestore and Local Storage)
@@ -311,7 +307,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         callback?.();
       }
     }
-  }, [user, db, toast, setLocations, t]); // Add setLocations and t to dependencies
+  }, [user, toast, setLocations, t]); // Add setLocations and t to dependencies
 
 
   // addPlaceAsLocation function (uses the modified addLocation)
@@ -371,7 +367,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to remove location.' });
       }
     }
-  }, [user, db, toast, setLocations]); // Add setLocations to dependencies
+  }, [user, toast, setLocations]); // Add setLocations to dependencies
 
   // Update favorite status function (handles both Firestore and Local Storage)
   const toggleFavoriteStatus = useCallback(async (idToUpdate: string, isFavorite: boolean) => {
@@ -411,7 +407,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to update location favorite status.' });
       }
     }
-  }, [user, db, toast, setLocations]); // Add setLocations to dependencies
+  }, [user, toast, setLocations]); // Add setLocations to dependencies
 
 
   // handleImportJSON function (handles both Firestore and Local Storage)

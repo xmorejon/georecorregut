@@ -14,6 +14,7 @@ const TravelFavicon: React.FC<TravelFaviconProps> = ({ size = 32, className }) =
   // You might want to add a fallback or error handling for missing sizes
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={faviconSrc}
       alt="Travel Favicon"

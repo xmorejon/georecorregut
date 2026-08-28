@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader, Heart, Trash2 } from 'lucide-react';
+import { Plus, Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Place } from '@/lib/types';
 

@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,16 +17,14 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Languages, LogOut, Settings, User, Sun } from 'lucide-react';
-import { Logo } from '@/components/icons/logo';
 import { useAppContext } from '@/contexts/app-context';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { useTheme } from 'next-themes';
 import type { Language } from '@/lib/types';
-import { auth, deleteUser, deleteUserDocument, db, doc, setDoc } from '@/lib/firebase';
+import { deleteUser, deleteUserDocument, db, doc, setDoc } from '@/lib/firebase';
 
-import { signOut, type User as FirebaseAuthUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { toast, useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export default function DashboardHeader() {
   const { isMobile } = useSidebar(); // Assuming useSidebar provides isMobile

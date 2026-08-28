@@ -51,7 +51,6 @@ export default function DashboardSidebar() {
 
   const [isCountriesModalOpen, setIsCountriesModalOpen] = useState(false); // State for modal visibility
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false); // State for modal visibility
-  const [loadingRanking, setLoadingRanking] = useState(false);
 
   // State to keep track of which continents are expanded
   const [expandedContinents, setExpandedContinents] = useState<{ [key: string]: boolean }>({});
@@ -116,27 +115,7 @@ export default function DashboardSidebar() {
     return rankingWithDetails;
   }, [user, userPoints, allUsersUniqueLocations]); // Dependencies
 
-  // Sort locations by Continent and then Country
-  const sortedLocationsByContinentAndCountry = useMemo(() => {
-    if (!locations) return [];
-    return [...locations].sort((a, b) => {
-      // Handle potential null or undefined continents/countries
-      const continentA = a.continent || '';
-      const continentB = b.continent || '';
-      const countryA = a.country || '';
-      const countryB = b.country || '';
 
-      // Sort by continent first
-      if (continentA < continentB) return -1;
-      if (continentA > continentB) return 1;
-
-      // If continents are the same, sort by country
-      if (countryA < countryB) return -1;
-      if (countryA > countryB) return 1;
-
-      return 0; // If both continent and country are the same
-    });
-  }, [locations]);
 
   // Get the set of visited country names from user's locations
   const visitedCountryNames = useMemo(() => {
@@ -168,21 +147,7 @@ export default function DashboardSidebar() {
     }, 0);
   }, []);
 
-  // Keep groupedVisitedCountries for potential other uses, but modal will use countriesWithVisitStatus
-  const groupedVisitedCountries = useMemo(() => {
-    if (!sortedLocationsByContinentAndCountry) return {};
-    return sortedLocationsByContinentAndCountry.reduce((acc: { [key: string]: string[] }, location) => {
-      if (location.country && location.continent) {
-        if (!acc[location.continent]) {
-          acc[location.continent] = [];
-        }
-        if (!acc[location.continent].includes(location.country)) {
-          acc[location.continent].push(location.country);
-        }
-      }
-      return acc;
-    }, {});
-  }, [sortedLocationsByContinentAndCountry]);
+
 
   // Determine rank and current user's points
   const userRank = useMemo(() => {
@@ -566,9 +531,7 @@ export default function DashboardSidebar() {
           <AlertDialogDescription asChild>
             <ScrollArea className="h-96"> {/* Increased height for potentially more ranking data */}
               <div className="space-y-4">
-                {loadingRanking ? (
-                  <p>{t('loadingRanking')}</p>
-                ) : sortedRankingData.length > 0 ? (
+                {sortedRankingData.length > 0 ? (
                   <>
                     {/* Render Ranking Data */}
                     {sortedRankingData.map(userData => (
