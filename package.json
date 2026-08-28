@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@emnapi/core": "^1.11.2",
+    "@emnapi/runtime": "^1.11.2",
+    "@emnapi/wasi-threads": "^1.2.2",
     "@firebase/firestore": "^4.9.0",
     "@genkit-ai/firebase": "^1.39.0",
     "@genkit-ai/google-cloud": "^1.39.0",
@@ -51,10 +54,8 @@
     "firebase-admin": "^13.0.0",
     "firebase-frameworks": "^0.11.0",
     "firebase-functions": "^7.2.5",
-    "@emnapi/core": "^1.11.2",
-    "@emnapi/runtime": "^1.11.2",
-    "@emnapi/wasi-threads": "^1.2.2",
     "genkit": "^1.39.0",
+    "genkit-ai": "^0.0.1",
     "handlebars": "^4.7.8",
     "lucide-react": "^0.475.0",
     "next": "^15.0.0",
