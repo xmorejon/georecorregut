@@ -34,9 +34,14 @@ def normalize_text(text: str) -> str:
 # Cloud Run dynamic port configuration
 port = int(os.environ.get("PORT", "8080"))
 
+# Non-guessable MCP endpoint path to reduce noise from random internet scanners.
+# This is not a security boundary — the service is public — but it avoids trivial
+# discovery by automated bots scanning common paths like /mcp.
+MCP_PATH = "/mcp/jf5UcuSgWQl5MWohyUibZA"
+
 # Transport security configuration for Cloud Run
 # Disables localhost-only DNS rebinding protection so incoming requests
-# through Cloud Run domains and IAM proxies are accepted.
+# through Cloud Run domains are accepted (required when allow-unauthenticated).
 transport_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
 
 # Initialize FastMCP server using the official MCP Python SDK
@@ -45,6 +50,7 @@ mcp = FastMCP(
     instructions="MCP server to search and retrieve travel locations and visited places in GeoRecorregut.",
     host="0.0.0.0",
     port=port,
+    streamable_http_path=MCP_PATH,
     transport_security=transport_security,
 )
 
@@ -55,7 +61,7 @@ async def health_check(request):
     return JSONResponse({
         "status": "healthy",
         "service": "search-locations-mcp",
-        "mcp_endpoint": "/mcp",
+        "mcp_endpoint": MCP_PATH,
     })
 
 # Define the single search_locations MCP tool
@@ -76,7 +82,7 @@ def search_locations(
     """
     Queries visited travel locations stored in Firestore with optional filters.
     Reuses the exact same filtering logic, accent normalization, and data model
-    as the searchLocations Cloud Function.
+    as the original searchLocations Cloud Function.
     """
     db = get_db()
 
@@ -122,5 +128,5 @@ def search_locations(
     }
 
 if __name__ == "__main__":
-    # Runs the MCP server with the modern Streamable HTTP transport
+    # Runs the MCP server with the modern Streamable HTTP transport at MCP_PATH
     mcp.run(transport="streamable-http")

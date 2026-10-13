@@ -1,0 +1,76 @@
+﻿{
+    "tools":  [
+                  {
+                      "name":  "search_locations",
+                      "description":  "Search for cities or places that the user has visited and recorded. Allows optional filtering by continent, country, location name, and whether it is marked as favorite (heart). If no filters are provided, returns all recorded places.",
+                      "inputSchema":  {
+                                          "properties":  {
+                                                             "continent":  {
+                                                                               "anyOf":  [
+                                                                                             {
+                                                                                                 "type":  "string"
+                                                                                             },
+                                                                                             {
+                                                                                                 "type":  "null"
+                                                                                             }
+                                                                                         ],
+                                                                               "default":  null,
+                                                                               "title":  "Continent"
+                                                                           },
+                                                             "country":  {
+                                                                             "anyOf":  [
+                                                                                           {
+                                                                                               "type":  "string"
+                                                                                           },
+                                                                                           {
+                                                                                               "type":  "null"
+                                                                                           }
+                                                                                       ],
+                                                                             "default":  null,
+                                                                             "title":  "Country"
+                                                                         },
+                                                             "name":  {
+                                                                          "anyOf":  [
+                                                                                        {
+                                                                                            "type":  "string"
+                                                                                        },
+                                                                                        {
+                                                                                            "type":  "null"
+                                                                                        }
+                                                                                    ],
+                                                                          "default":  null,
+                                                                          "title":  "Name"
+                                                                      },
+                                                             "isFavorite":  {
+                                                                                "anyOf":  [
+                                                                                              {
+                                                                                                  "type":  "boolean"
+                                                                                              },
+                                                                                              {
+                                                                                                  "type":  "null"
+                                                                                              }
+                                                                                          ],
+                                                                                "default":  null,
+                                                                                "title":  "Isfavorite"
+                                                                            }
+                                                         },
+                                          "title":  "search_locationsArguments",
+                                          "type":  "object"
+                                      },
+                      "outputSchema":  {
+                                           "properties":  {
+                                                              "result":  {
+                                                                             "additionalProperties":  true,
+                                                                             "title":  "Result",
+                                                                             "type":  "object"
+                                                                         }
+                                                          },
+                                           "required":  [
+                                                            "result"
+                                                        ],
+                                           "title":  "search_locationsOutput",
+                                           "type":  "object"
+                                       }
+                  }
+              ]
+}
